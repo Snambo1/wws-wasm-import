@@ -11,6 +11,8 @@ jobs:
       - uses: mymindstorm/setup-emsdk@v11
       - name: build
         run: emcc script.c -o script.wasm
+      - name: list
+        run: ls
       - name: export
         run: |
-          curl -H "X-WASMModule-Token: ${{secrets.WASMMODULE_TOKEN}}" -F "data=@.\script.wasm" "https://wws.d1ag0n.com/api/wasm-module/upload"
+          curl -H "X-WASMModule-Token: ${{secrets.WASMMODULE_TOKEN}}" -F "data=@./script.wasm" "https://wws.d1ag0n.com/api/wasm-module/upload"
