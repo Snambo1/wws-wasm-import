@@ -11,4 +11,5 @@ jobs:
       - uses: mymindstorm/setup-emsdk@v11
       - name: build
         run: emcc script.c
-        run: dir
+      - name: list
+        run: ls
