@@ -10,6 +10,6 @@ jobs:
       - uses: actions/checkout@v3
       - uses: mymindstorm/setup-emsdk@v11
       - name: build
-        run: emcc script.c
+        run: emcc script.c -o script.wasm
       - name: list
         run: ls
