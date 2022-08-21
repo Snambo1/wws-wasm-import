@@ -1,0 +1,14 @@
+name: "emsdk"
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: mymindstorm/setup-emsdk@v11
+      - name: build
+        run: emcc script.c
+        run: dir
