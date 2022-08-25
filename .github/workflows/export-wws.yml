@@ -7,5 +7,5 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: which
-        run: which clang
+      - name: list
+        run: ls /usr/bin
