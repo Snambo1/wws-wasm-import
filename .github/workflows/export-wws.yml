@@ -15,7 +15,7 @@ jobs:
           platform: x64
       - name: IR
         run: |
-          clang --target=wasm32 -nostdlib -Wl,--no-entry -Wl,--export-all -o add.wasm script.c
+          clang --target=wasm32 -O3 -flto -nostdlib -Wl,--no-entry -Wl,--export-all -Wl,--lto-O3 -o add.wasm script.c
       - name: list
         run: ls
       - name: go offline
