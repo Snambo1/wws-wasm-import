@@ -7,25 +7,5 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
       - name: which
-        run: which wasm-ld
-      - name: build
-        run: |
-          clang --target=wasm32 -O3 -flto -nostdlib -Wl,--no-entry -Wl,--export-all -Wl,--lto-O3 -o add.wasm script.c
-      - name: list
-        run: ls
-      - name: go offline
-        shell: python
-        run: |
-          import ftplib
-          import io
-          import time
-          ftp = ftplib.FTP('${{ secrets.FTP_SERVER }}')
-          ftp.login('${{ secrets.FTP_USER }}', '${{ secrets.FTP_PASSWORD }}')
-          file = open('./script.wasm','rb')
-          ftp.storbinary('STOR script.wasm', file)
-          ftp.quit()
-      - name: export
-        run: |
-          curl -H "X-WASMModule-Token: ${{secrets.WASMMODULE_TOKEN}}" -F "data=@./script.wasm" "https://wws.d1ag0n.com/api/wasm-module/token-upload"
+        run: which clang
