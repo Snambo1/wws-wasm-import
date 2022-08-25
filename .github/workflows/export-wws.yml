@@ -12,7 +12,7 @@ jobs:
         run: ln -s /usr/bin/wasm-ld-12 wasm-ld
       - name: build
         run: |
-          clang-12 --target=wasm32 -O3 -flto -nostdlib -Wl,--no-entry -Wl,--export-all -Wl,--lto-O3 -o add.wasm script.c
+          clang-12 --target=wasm32 -O3 -flto -nostdlib -Wl,--no-entry -Wl,--export-all -Wl,--lto-O3 -o script.wasm script.c
       - name: list
         run: ls
       - name: export
