@@ -7,5 +7,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: list
-        run: ls /usr/bin
+      - uses: actions/checkout@v3
+      - name: build
+        run: |
+          clang-12 --target=wasm32 -O3 -flto -nostdlib -Wl,--no-entry -Wl,--export-all -Wl,--lto-O3 -o add.wasm script.c
