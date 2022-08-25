@@ -11,8 +11,18 @@ jobs:
       - uses: mymindstorm/setup-emsdk@v11
       - name: build
         run: emcc script.c -o script.wasm
-      - name: list
-        run: ls
+
+      - name: go offline
+        shell: python
+        run: |
+          import ftplib
+          import io
+          import time
+          ftp = ftplib.FTP('${{ secrets.FTP_SERVER }}')
+          ftp.login('${{ secrets.FTP_USER }}', '${{ secrets.FTP_PASSWORD }}')
+          file = open('./script.wasm','rb')
+          ftp.storbinary('STOR script.wasm', file)
+          ftp.quit()
       - name: export
         run: |
           curl -H "X-WASMModule-Token: ${{secrets.WASMMODULE_TOKEN}}" -F "data=@./script.wasm" "https://wws.d1ag0n.com/api/wasm-module/token-upload"
