@@ -8,10 +8,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: mymindstorm/setup-emsdk@v11
-      - name: build
-        run: emcc script.c -o script.wasm
-
+      - name: Set up Clang
+        uses: egor-tensin/setup-clang@v1
+        with:
+          version: latest
+          platform: x64
+      - name: IR
+        run: |
+          clang --target=wasm32 -nostdlib -Wl,--no-entry -Wl,--export-all -o add.wasm script.c
+      - name: list
+        run: ls
       - name: go offline
         shell: python
         run: |
