@@ -8,8 +8,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: mymindstorm/setup-emsdk@v11
+      - name: ln
+        run: ln -s /usr/bin/wasm-ld-12 wasm-ld
       - name: build
-        run: emcc script.c -o script.wasm
+        run: |
+          clang-12 --target=wasm32 -O3 -flto -nostdlib -Wl,--no-entry -Wl,--export-all -Wl,--lto-O3 -o script.wasm script.c
       - name: list
         run: ls
+      - name: export
+        run: |
+          curl -H "X-WASMModule-Token: ${{secrets.WASMMODULE_TOKEN}}" -F "data=@./script.wasm" "https://wws.d1ag0n.com/api/wasm-module/token-upload"
