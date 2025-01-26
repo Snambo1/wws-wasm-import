@@ -1,12 +1,11 @@
-extern void someFunction(int i);
+// #include <string.h>
 
-int add(int length, int* array) {
-    int result = 0;
-	for (int i = 0; i < length; i++) {
-		result += array[i];
-		array[i]++;
-	}
-	return result;
+extern void _actr_fillStyle(const char* value, int length);
+extern void _actr_fillRect(int x, int y, int w, int h);
+
+
+int main() {
+  _actr_fillStyle("white", 5);
+  _actr_fillRect(10, 20, 30, 40);
 }
 
-// clang --target=wasm32 -O3 -flto -nostdlib -Wl,--no-entry -Wl,--export-all -Wl,--lto-O3 -o add.wasm script.c
