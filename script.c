@@ -10,8 +10,8 @@ extern void _actr_log(const char* value, int length);
 extern void _actr_fillStyle(const char* value, int length);
 extern void _actr_strokeStyle(const char* value, int length);
 
-extern void _actr_fillRect(int x, int y, int w, int h);
-extern void _actr_strokeRect(int x, int y, int w, int h);
+extern void _actr_fillRect(float x, float y, float w, float h);
+extern void _actr_strokeRect(float x, float y, float w, float h);
 
 void actr_fillStyle(const char* value) {
   _actr_fillStyle(value, strlen(value));
@@ -27,10 +27,10 @@ void actr_log(const char* buffer) {
 
 
 // time in ms
-int main() {
+int main(int time) {
   // static float time = 0;
-  // float time = 0;
-  //time /= 1000.0;
+  float ftime = time;
+  ftime /= 1000.0;
   
 
   actr_fillStyle("black");
@@ -38,7 +38,7 @@ int main() {
   
   actr_fillStyle("red");
   actr_strokeStyle("white");
-  _actr_fillRect(10, 20, 30, 40);
-  _actr_strokeRect(10, 20, 30, 40);
+  _actr_fillRect(ftime, 20, 30, 40);
+  _actr_strokeRect(ftime, 20, 30, 40);
   return 0;
 }
