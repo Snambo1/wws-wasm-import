@@ -14,20 +14,15 @@ void actr_canvas2d_ellipse(double x, double y, double radiusX, double radiusY, d
 
 void actr_canvas2d_fill();
 void actr_canvas2d_fillRect(double x, double y, double w, double h);
-void actr_canvas2d_fillTextLength(double x, double y, char *text, int length);
+void actr_canvas2d_fillText(double x, double y, char *text, int length);
+
+void actr_canvas2d_measureText(char * text, int length);
 
 void actr_canvas2d_stroke();
 void actr_canvas2d_strokeRect(double x, double y, double w, double h);
 
 void actr_sizeSanity(char *text, int length);
 // end externs
-
-// helpers
-void actr_canvas2d_fillText(double x, double y, char *text)
-{
-    actr_canvas2d_fillTextLength(x, y, text, strlen(text));
-}
-// end helpers
 
 struct ActrPoint
 {
@@ -38,6 +33,7 @@ struct ActrState
 {
     struct ActrPoint canvasSize;
     struct ActrPoint pointerPosition;
+    struct ActrPoint textSize;
 };
 static struct ActrState actrState;
 

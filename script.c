@@ -36,17 +36,19 @@ void EMSCRIPTEN_KEEPALIVE step(double delta)
   snprintf(buffer, SIZE, "click count: %i x:%i y:%i w:%i h:%i", click, actrState.pointerPosition.x, actrState.pointerPosition.y, actrState.canvasSize.x, actrState.canvasSize.y);
     
 
-  actr_canvas2d_fillStyle(0, 0, 0, 10);
+  actr_canvas2d_fillStyle(0, 0, 0, 100);
   actr_canvas2d_fillRect(0, 0, 9999, 9999);
 
   actr_canvas2d_fillStyle(255, 0, 0, 50);
   actr_canvas2d_strokeStyle(255, 255, 255, 100);
 
+  int top = 10;
   //  actr_canvas2d_fillRect(x, 10, 60, 15);
-  actr_canvas2d_strokeRect(x, 10, 60, 14);
+  actr_canvas2d_measureText(buffer, strlen(buffer));
+  actr_canvas2d_strokeRect(x - 2, top -2, actrState.textSize.x + 4, actrState.textSize.y + 4);
 
   actr_canvas2d_fillStyle(0, 200, 200, 100);
-  actr_canvas2d_fillText(x + 5, 20, buffer);
+  actr_canvas2d_fillText(x, top + actrState.textSize.y, buffer, strlen(buffer));
 
   actr_canvas2d_fillStyle(255, 0, 0, 50);
   actr_canvas2d_beginPath();
