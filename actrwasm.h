@@ -36,22 +36,16 @@ struct ActrPoint
 };
 struct ActrState
 {
-    unsigned int structSize;
     struct ActrPoint canvasSize;
-    struct ActrPoint pointer;
+    struct ActrPoint pointerPosition;
 };
-static struct ActrState state;
+static struct ActrState actrState;
 
 void EMSCRIPTEN_KEEPALIVE actr_doSanity()
 {
-    state.canvasSize.x = 0;
-    state.canvasSize.y = 0;
-    state.pointer.x = 0;
-    state.pointer.y = 0;
-
     int SIZE = 64;
     char buffer[SIZE];
-    snprintf(buffer, SIZE, ":%lu:%lu:%lu:%lu", sizeof(int), sizeof(double), sizeof(struct ActrState), &state);
+    snprintf(buffer, SIZE, "%lu:%lu:%lu:%lu", sizeof(int), sizeof(double), sizeof(struct ActrState), &actrState);
     actr_sizeSanity(buffer, strlen(buffer));
 }
 

@@ -14,7 +14,7 @@
 // or get cli @
 
 static double time = 0;
-
+static int click = 0;
 void EMSCRIPTEN_KEEPALIVE init()
 {
 
@@ -22,6 +22,7 @@ void EMSCRIPTEN_KEEPALIVE init()
 
 void EMSCRIPTEN_KEEPALIVE tap(double x, double y)
 {
+  click++;
 }
 
 void EMSCRIPTEN_KEEPALIVE step(double delta)
@@ -30,8 +31,12 @@ void EMSCRIPTEN_KEEPALIVE step(double delta)
   time += delta * 0.001;
 
   double x = fmod(time, 100.0);
+  int SIZE = 128;
+  char buffer[SIZE];
+  snprintf(buffer, SIZE, "click count: %i x:%i y:%i w:%i h:%i", click, actrState.pointerPosition.x, actrState.pointerPosition.y, actrState.canvasSize.x, actrState.canvasSize.y);
+    
 
-  actr_canvas2d_fillStyle(0, 0, 0, 100);
+  actr_canvas2d_fillStyle(0, 0, 0, 10);
   actr_canvas2d_fillRect(0, 0, 9999, 9999);
 
   actr_canvas2d_fillStyle(255, 0, 0, 50);
@@ -41,7 +46,7 @@ void EMSCRIPTEN_KEEPALIVE step(double delta)
   actr_canvas2d_strokeRect(x, 10, 60, 14);
 
   actr_canvas2d_fillStyle(0, 200, 200, 100);
-  actr_canvas2d_fillText(x + 5, 20, "Welcome!");
+  actr_canvas2d_fillText(x + 5, 20, buffer);
 
   actr_canvas2d_fillStyle(255, 0, 0, 50);
   actr_canvas2d_beginPath();
