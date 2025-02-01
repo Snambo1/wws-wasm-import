@@ -1,6 +1,6 @@
 
-#ifndef _H
-#define _H
+#ifndef ACTRMAP_H
+#define ACTRMAP_H
 #include "actrstring.h"
 
 void actr_map_delete(int map);

@@ -1,8 +1,11 @@
-
 #include "actrwasm.h"
 #include "actrmap.h"
 #include "actrstring.h"
 #include "actrcanvas.h"
+#include "actrlog.h"
+#include "actrtime.h"
+#include "actralloc.h"
+
 // recommended compilation method
 // clang script.c --target=wasm32-unknown-unknown --optimize=3 -nostdlib -nostdlibinc -nostdinc -nostdinc++ -Wl,--no-entry -Wl,--allow-undefined --wasm-opt --output script.wasm
 
@@ -28,25 +31,21 @@ const int MAP = 99;
 
 // optional called when a map is populated
 
-void actr_map_ready()
-{
-}
-
-
 // optional called first
 [[clang::export_name("actr_init")]]
 void actr_init()
 {
   actr_map_set_int(MAP, "click", 0);
-
+  actr_log("WASM initialized.");
 }
-
 
 // optional this is called when the user clicks the mouse
 [[clang::export_name("actr_tap")]]
 void actr_tap(double x, double y)
 {
   click++;
+  actr_malloc(1);
+  actr_log("WASM got tap.");
 }
 
 // optional this is called in request animation frame
@@ -67,7 +66,7 @@ void actr_step(double delta)
   // measure the string, result will be placed into actrState.textSize
   //actr_canvas2d_measureText(buffer, 10);
   
-  struct ActrPoint p = actrState.pointerPosition;
+  struct ActrPoint p = actrState->pointerPosition;
 
   // clear background to black
   actr_canvas2d_fillStyle(0, 0, 0, 100);
@@ -80,13 +79,15 @@ void actr_step(double delta)
   actr_canvas2d_strokeStyle(255, 255, 255, 100);
 
   // draw an outline around the text
-  actr_canvas2d_strokeRect(p.x, p.y, actrState.textSize.x + 4, actrState.textSize.y + 6);
+  // actr_canvas2d_strokeRect(p.x, p.y, actrState.textSize.x + 4, actrState.textSize.y + 6);
 
   // set fill style to cyan at 80% transparency
   actr_canvas2d_fillStyle(0, 200, 200, 80);
 
   // draw the text at the mouse position
-  // actr_canvas2d_fillText(p.x, p.y + actrState.textSize.y, buffer, strlen(buffer));
+  char * value = actr_memory_report();
+  actr_canvas2d_fillText(p.x, p.y, value, strlen(value));
+  actr_free(value);
 
   int radius = 20;
 
