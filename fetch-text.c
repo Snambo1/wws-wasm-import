@@ -2,11 +2,12 @@
 #include "actrfetch.h"
 #include "actrmap.h"
 #include "actrcanvas.h"
+#include "actrasync.h"
 
+// fetch text example
 
 int asyncHandle = 0;
 char * text = "loading will begin shortly...";
-int tick = 0;
 
 [[clang::export_name("actr_async_result")]]
 void actr_async_result(int handle, int success)
@@ -15,7 +16,9 @@ void actr_async_result(int handle, int success)
         if (success == 1) {
             text = actr_map_get_string(1, "test");
         } else {
-            text = "error";
+            // this will happen if the fetch request fails
+            asyncHandle = 0;
+            text = "fetch error, retrying...";
         }
     }
 }
@@ -23,12 +26,16 @@ void actr_async_result(int handle, int success)
 [[clang::export_name("actr_step")]]
 void actr_step(double delta)
 {
-    tick++;
-
-    if (tick > 60 * 5 && asyncHandle == 0)
+    if (asyncHandle == 0)
     {
         text = "loading...";
         asyncHandle = actr_fetch_text("https://mrnathanstiles.github.io/test.txt", 1, "test");
+        if (asyncHandle < 1) {
+            // this would happen if the url is invalid or rejected
+            // this will happen if actr_async_result is not exported
+            text = "url error, retrying...";
+            asyncHandle = 0;
+        }
     }
 
 
