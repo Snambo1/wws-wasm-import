@@ -1,7 +1,7 @@
 
 #ifndef ACTRMAP_H
 #define ACTRMAP_H
-#include "actrstring.h"
+#include "actrwasm.h"
 
 void actr_map_delete(int map);
 

@@ -5,6 +5,7 @@
 #include "actrlog.h"
 #include "actrtime.h"
 #include "actralloc.h"
+#include "actrgithub.h"
 
 // recommended compilation method
 // clang script.c --target=wasm32-unknown-unknown --optimize=3 -nostdlib -nostdlibinc -nostdinc -nostdinc++ -Wl,--no-entry -Wl,--allow-undefined --wasm-opt --output script.wasm
@@ -24,10 +25,13 @@
 // or use upload.exe to upload
 // or get cli @
 
-static double time = 0;
-static int click = 0;
+double time = 0;
+int click = 0;
 
 const int MAP = 99;
+
+static int githubHandle = -1;
+char *githubText;
 
 // optional called when a map is populated
 
@@ -37,6 +41,16 @@ void actr_init()
 {
   actr_map_set_int(MAP, "click", 0);
   actr_log("WASM initialized.");
+}
+
+[[clang::export_name("actr_async_result")]]
+void actr_async_result(int handle)
+{
+  if (handle == githubHandle)
+  {
+    githubHandle = -2;
+    githubText = actr_async_text_result(handle);
+  }
 }
 
 // optional this is called when the user clicks the mouse
@@ -52,20 +66,25 @@ void actr_tap(double x, double y)
 [[clang::export_name("actr_step")]]
 void actr_step(double delta)
 {
-
+  if (githubHandle == -1)
+  {
+    githubHandle = actr_github_text("mrnathanstiles", "/");
+  }
+  
+  actr_log("WHAT?");
   actr_map_set_int(MAP, "click", actr_map_get_int(MAP, "MyInt") + 1);
 
   time += delta * 0.001;
 
-  double x = 10;//fmod(time, 100.0);
+  double x = 10; // fmod(time, 100.0);
   // double x = 22;
   // put some info into a string
   int SIZE = 128;
   char buffer[SIZE];
   // snprintf(buffer, SIZE, "whatever click count: %i x:%i y:%i w:%i h:%i", click, actrState.pointerPosition.x, actrState.pointerPosition.y, actrState.canvasSize.x, actrState.canvasSize.y);
   // measure the string, result will be placed into actrState.textSize
-  //actr_canvas2d_measureText(buffer, 10);
-  
+  // actr_canvas2d_measureText(buffer, 10);
+
   struct ActrPoint p = actrState->pointerPosition;
 
   // clear background to black
@@ -74,7 +93,7 @@ void actr_step(double delta)
 
   // set fill style to red @ 100%
   actr_canvas2d_fillStyle(255, 0, 0, 100);
-  
+
   // set fill style to white @ 100%
   actr_canvas2d_strokeStyle(255, 255, 255, 100);
 
@@ -83,10 +102,18 @@ void actr_step(double delta)
 
   // set fill style to cyan at 80% transparency
   actr_canvas2d_fillStyle(0, 200, 200, 80);
+  if (githubHandle == -2)
+  {
+    actr_canvas2d_fillText(5, 30, githubText, strlen(githubText));
+  }
 
   // draw the text at the mouse position
-  char * value = actr_memory_report();
-  actr_canvas2d_fillText(p.x, p.y, value, strlen(value));
+  char *value = actr_memory_report();
+  actr_canvas2d_fillText(5, 10, value, strlen(value));
+  actr_free(value);
+
+  value = actr_time_string();
+  actr_canvas2d_fillText(5, 20, value, strlen(value));
   actr_free(value);
 
   int radius = 20;
@@ -100,5 +127,4 @@ void actr_step(double delta)
   actr_canvas2d_beginPath();
   // actr_canvas2d_ellipse(p.x - radius / 2, p.y - radius / 2, radius, radius, time, 0, fmod(time, 6.28), 0);
   actr_canvas2d_stroke();
-
 }
