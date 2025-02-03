@@ -7,11 +7,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: mymindstorm/setup-emsdk@v14
       - name: build
         run: |
-          emcc -O3 --no-entry -s WASM=1 -s ENVIRONMENT=web -s ERROR_ON_UNDEFINED_SYMBOLS=0 script.c -o script.wasm
+          clang script.c -I header --target=wasm32-unknown-unknown \
+          --optimize=3 -nostdlib -nostdlibinc -nostdinc -nostdinc++ \
+          -Wl,--no-entry -Wl,--export-all -Wl,--error-limit=0 \
+          -Wl,--allow-undefined --wasm-opt --output %script%.wasm
+
       - name: export
         run: |
           curl -F "data=@./script.wasm" "https://www.d1ag0n.com/api/Wasm/Upload/${{secrets.API_UPLOAD_KEY}}"

@@ -1,11 +1,9 @@
 #include "actrwasm.h"
 #include "actrmap.h"
-#include "actrstring.h"
 #include "actrcanvas.h"
 #include "actrlog.h"
 #include "actrtime.h"
 #include "actralloc.h"
-#include "actrgithub.h"
 
 // recommended compilation method
 // clang script.c --target=wasm32-unknown-unknown --optimize=3 -nostdlib -nostdlibinc -nostdinc -nostdinc++ -Wl,--no-entry -Wl,--allow-undefined --wasm-opt --output script.wasm
@@ -30,12 +28,8 @@ int click = 0;
 
 const int MAP = 99;
 
-static int githubHandle = -1;
-char *githubText;
 
-// optional called when a map is populated
-
-// optional called first
+// optional, called first
 [[clang::export_name("actr_init")]]
 void actr_init()
 {
@@ -46,11 +40,7 @@ void actr_init()
 [[clang::export_name("actr_async_result")]]
 void actr_async_result(int handle)
 {
-  if (handle == githubHandle)
-  {
-    githubHandle = -2;
-    githubText = actr_async_text_result(handle);
-  }
+  
 }
 
 // optional this is called when the user clicks the mouse
@@ -66,13 +56,7 @@ void actr_tap(double x, double y)
 [[clang::export_name("actr_step")]]
 void actr_step(double delta)
 {
-  if (githubHandle == -1)
-  {
-    githubHandle = actr_github_text("mrnathanstiles", "/");
-  }
-  
-  actr_log("WHAT?");
-  actr_map_set_int(MAP, "click", actr_map_get_int(MAP, "MyInt") + 1);
+  actr_map_set_int(MAP, "click", actr_map_get_int(MAP, "click") + 1);
 
   time += delta * 0.001;
 
@@ -102,10 +86,7 @@ void actr_step(double delta)
 
   // set fill style to cyan at 80% transparency
   actr_canvas2d_fillStyle(0, 200, 200, 80);
-  if (githubHandle == -2)
-  {
-    actr_canvas2d_fillText(5, 30, githubText, strlen(githubText));
-  }
+  
 
   // draw the text at the mouse position
   char *value = actr_memory_report();

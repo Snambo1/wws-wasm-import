@@ -12,11 +12,15 @@ if "%script%" == "" (
 )
 
 if "%script%" == "fetch-text.c" (
-  SET apiKey=pjy2drrc8hhhvk9gx7c8ga3h3aa6l4en9rtk5sa8rbisgz0hpd
+  SET apiKey=2aiaj8uomcsp6usjza3al4irpaa1dltedso75cakcmudwmbaid
 )
 
 if "%script%" == "fetch-json.c" (
-  SET apiKey=w3pwm3k3bzdj9jskjzo8c5axm5ffd8ygz51tzgi6q9jgp98jjj
+  SET apiKey=r6aadu6im81olclxaa3el76v1tvilp3xq1fuuxtl02npzyuyfx
+)
+
+if "%script%" == "script.c" (
+  SET apiKey=l90xptnc0hk7kegmmfqu08njjbpdox1zv2mcrxr46sm9e1lfgg
 )
 
 if "%script%" == "myScript" (
@@ -28,7 +32,7 @@ if "%apiKey%" == "" (
   exit
 )
 
-if %server% == local (
+if "%server%" == "local" (
   SET server=https://localhost:7086/api/Wasm/Upload/
 ) else (
   SET server=https://www.d1ag0n.com/api/Wasm/Upload/
