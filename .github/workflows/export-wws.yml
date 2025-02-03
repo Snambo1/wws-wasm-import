@@ -7,13 +7,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: build
-        run: |
-          clang script.c -I header --target=wasm32-unknown-unknown \
-          --optimize=3 -nostdlib -nostdlibinc -nostdinc -nostdinc++ \
-          -Wl,--no-entry -Wl,--export-all -Wl,--error-limit=0 \
-          -Wl,--allow-undefined --wasm-opt --output %script%.wasm
+    - name: checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
-      - name: export
-        run: |
-          curl -F "data=@./script.wasm" "https://www.d1ag0n.com/api/Wasm/Upload/${{secrets.API_UPLOAD_KEY}}"
+    - name: build
+      run: |
+        clang script.c -I header --target=wasm32-unknown-unknown \
+        --optimize=3 -nostdlib -nostdlibinc -nostdinc -nostdinc++ \
+        -Wl,--no-entry -Wl,--export-all -Wl,--error-limit=0 \
+        -Wl,--allow-undefined --wasm-opt --output %script%.wasm
+
+    - name: export
+      run: |
+        curl -F "data=@./script.wasm" "https://www.d1ag0n.com/api/Wasm/Upload/${{secrets.API_UPLOAD_KEY}}"
