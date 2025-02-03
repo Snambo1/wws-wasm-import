@@ -12,9 +12,13 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: clang
+      run: |
+        clang -v
+  
     - name: build
       run: |
-        clang script.c -I header --target=wasm32-unknown-unknown \
+        clang-19 script.c -I header --target=wasm32-unknown-unknown \
         --optimize=3 -nostdlib -nostdlibinc -nostdinc -nostdinc++ \
         -Wl,--no-entry -Wl,--export-all -Wl,--error-limit=0 \
         -Wl,--allow-undefined --wasm-opt --output %script%.wasm
