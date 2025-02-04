@@ -44,6 +44,6 @@ void actr_step(double delta)
     actr_canvas2d_fill_rect(-10, -10, 9999, 9999);
 
     actr_canvas2d_fill_style(255, 255, 255, 100);
-    actr_canvas2d_fillText(10, 20, text, strlen(text));
+    actr_canvas2d_fill_text(10, 20, text);
 
 }

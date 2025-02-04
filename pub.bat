@@ -21,7 +21,7 @@ if "%script%" == "fetch-text.c" (
 
 if "%script%" == "fetch-json.c" (
   if "%local%" == "local" (
-    SET apiKey=0
+    SET apiKey=ndkrj0cgsqxls7fktheaot4p13i6n0l21qp1giajqsuc8crztp
   ) else (
     SET apiKey=0
   )
@@ -41,7 +41,20 @@ if "%script%" == "hello-world.c" (
   ) else (
     SET apiKey=0
   )
+) else if "%script%" == "time.c" (
+  if "%local%" == "local" (
+    SET apiKey=wyg216v0h75ti71mrsf3ud7qirna9ohyblou55sdqu6d5svq7t
+  ) else (
+    SET apiKey=0
+  )
+) else if "%script%" == "memory.c" (
+  if "%local%" == "local" (
+    SET apiKey=m0m0jmeppsl0w547m7yeoto0kqen2c1wcwg22gq1iiqv29i2ht
+  ) else (
+    SET apiKey=0
+  )
 )
+
 
 if "%script%" == "myScript" (
   SET apiKey=myApiKey
@@ -82,5 +95,5 @@ if %ERRORLEVEL% == 0 (
   echo %script%.wasm uploaded
   rm %script%.wasm
 ) else (
-  echo upload failed
+  echo %script%.wasm upload failed
 )
