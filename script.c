@@ -29,6 +29,7 @@ int click = 0;
 const int MAP = 99;
 
 
+
 // optional, called first
 [[clang::export_name("actr_init")]]
 void actr_init()
@@ -42,6 +43,7 @@ void actr_async_result(int handle)
 {
   
 }
+
 
 // optional this is called when the user clicks the mouse
 [[clang::export_name("actr_tap")]]
@@ -72,40 +74,37 @@ void actr_step(double delta)
   struct ActrPoint p = actrState->pointerPosition;
 
   // clear background to black
-  actr_canvas2d_fillStyle(0, 0, 0, 100);
-  actr_canvas2d_fillRect(0, 0, 9999, 9999);
+  actr_canvas2d_fill_style(0, 0, 0, 100);
+  actr_canvas2d_fill_rect(0, 0, 9999, 9999);
 
   // set fill style to red @ 100%
-  actr_canvas2d_fillStyle(255, 0, 0, 100);
+  actr_canvas2d_fill_style(255, 0, 0, 100);
 
   // set fill style to white @ 100%
-  actr_canvas2d_strokeStyle(255, 255, 255, 100);
-
-  // draw an outline around the text
-  // actr_canvas2d_strokeRect(p.x, p.y, actrState.textSize.x + 4, actrState.textSize.y + 6);
+  actr_canvas2d_stroke_style(255, 255, 255, 100);
 
   // set fill style to cyan at 80% transparency
-  actr_canvas2d_fillStyle(0, 200, 200, 80);
+  actr_canvas2d_fill_style(0, 200, 200, 80);
   
 
   // draw the text at the mouse position
   char *value = actr_memory_report();
-  actr_canvas2d_fillText(5, 10, value, strlen(value));
+  actr_canvas2d_fill_text(5, 10, value);
   actr_free(value);
 
   value = actr_time_string();
-  actr_canvas2d_fillText(5, 20, value, strlen(value));
+  actr_canvas2d_fill_text(5, 20, value);
   actr_free(value);
 
   int radius = 20;
 
   // draw a moving ellipse near the mouse
-  actr_canvas2d_fillStyle(255, 0, 0, 50);
-  actr_canvas2d_beginPath();
+  actr_canvas2d_fill_style(255, 0, 0, 50);
+  actr_canvas2d_begin_path();
   // actr_canvas2d_ellipse(p.x - radius / 2, p.y - radius / 2, radius, radius, time, 0, fmod(time, 6.28), 0);
   actr_canvas2d_fill();
 
-  actr_canvas2d_beginPath();
+  actr_canvas2d_begin_path();
   // actr_canvas2d_ellipse(p.x - radius / 2, p.y - radius / 2, radius, radius, time, 0, fmod(time, 6.28), 0);
   actr_canvas2d_stroke();
 }
