@@ -1,8 +1,8 @@
 #include "actrwasm.h"
 #include "actrcanvas.h"
 
-[[clang::export_name("actr_init")]]
-void actr_init()
+[[clang::export_name("actr_step")]]
+void actr_step()
 {
   actr_canvas2d_fill_style(0,0,0,100); // set fill color to black
   actr_canvas2d_fill_rect(-10,-10,9999,9999); // clear the canvas
