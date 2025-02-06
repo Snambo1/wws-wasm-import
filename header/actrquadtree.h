@@ -54,6 +54,7 @@ struct ActrQuadTree *actr_quad_tree_init(int root, int top, int right, int botto
 
     struct ActrQuadTree *result = actr_malloc(sizeof(struct ActrQuadTree));
     result->root = root;
+    result->branch = actr_malloc(4 * sizeof(void *));
     result->bounds = _actr_quad_tree_bounds(top, right, bottom, left);
     return result;
 }
@@ -91,7 +92,9 @@ void _actr_quad_tree_grow(struct ActrQuadTree *tree)
     {
         if (tree->branch[0])
         {
-            // becomes 1.3
+            // 0 1
+            // 3 2
+            // becomes 0.2
             new = actr_quad_tree_init(0, tree->bounds->top - grow, tree->branch[0]->bounds->right, tree->branch[0]->bounds->bottom, tree->bounds->left - grow);
             new->branch[2] = tree->branch[0];
             tree->branch[0] = new;
@@ -102,7 +105,6 @@ void _actr_quad_tree_grow(struct ActrQuadTree *tree)
             // 4 3
             // becomes 2.4
             new = actr_quad_tree_init(0, tree->bounds->top - grow, tree->bounds->right + grow, tree->branch[1]->bounds->bottom, tree->branch[1]->bounds->left);
-            // 2
             new->branch[3] = tree->branch[1];
             tree->branch[1] = new;
         }
@@ -112,7 +114,6 @@ void _actr_quad_tree_grow(struct ActrQuadTree *tree)
             // 4 3
             // becomes 3.1
             new = actr_quad_tree_init(0, tree->branch[2]->bounds->top, tree->bounds->right + grow, tree->bounds->bottom + grow, tree->branch[2]->bounds->left);
-            // 3
             new->branch[0] = tree->branch[2];
             tree->branch[2] = new;
         }
@@ -245,10 +246,6 @@ void actr_quad_tree_insert(struct ActrQuadTree *tree, struct ActrQuadTreeLeaf *l
             }
             actr_vector_add(tree->stuck, leaf);
             continue;
-        }
-        if (!tree->branch)
-        {
-            tree->branch = actr_malloc(4 * sizeof(void *));
         }
 
         if (!tree->branch[index])
