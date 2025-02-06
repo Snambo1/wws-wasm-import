@@ -2,6 +2,13 @@
 #define ACTRQUADTREE_H
 #include "actralloc.h"
 #include "actrvector.h"
+#include "actrcanvas.h"
+
+extern void _actr_debug_length(char *ptr, int len, int val);
+void actr_debug(char *ptr, int val)
+{
+    _actr_debug_length(ptr, strlen(ptr), val);
+}
 struct ActrQuadTreeBounds
 {
     long top;
@@ -23,7 +30,6 @@ struct ActrQuadTree
     struct ActrQuadTree *three;
     struct ActrQuadTree *four;
     struct ActrVector *items;
-    int itemCount;
 };
 
 struct ActrQuadTreeBounds *_actr_quad_tree_bounds(long top, long right, long bottom, long left)
@@ -49,19 +55,37 @@ struct ActrQuadTree *actr_quad_tree_init()
 {
     struct ActrQuadTree *result = actr_malloc(sizeof(struct ActrQuadTree));
     result->root = 1;
-    result->bounds = _actr_quad_tree_bounds(64, 64, 64, 64);
+    result->bounds = _actr_quad_tree_bounds(0, 64, 64, 0);
     return result;
 }
 int _actr_quad_tree_bounds_contains(struct ActrQuadTreeBounds *bounds, struct ActrQuadTreeBounds *other)
 {
+
     if (other->top < bounds->top)
+    {
+        actr_debug("1contains one", other->top);
+        actr_debug("2contains one", bounds->top);
         return 0;
+    }
+    // 566 > 0
     if (other->right > bounds->right)
+    {
+        actr_debug("1contains two", other->right);
+        actr_debug("2contains two", bounds->right);
         return 0;
+    }
     if (other->bottom > bounds->bottom)
+    {
+        actr_debug("1contains three", other->bottom);
+        actr_debug("2contains three", bounds->bottom);
         return 0;
+    }
     if (other->left < bounds->left)
+    {
+        actr_debug("1contains four", other->left);
+        actr_debug("2contains four", bounds->left);
         return 0;
+    }
     return 1;
 }
 // 1 2
@@ -70,7 +94,9 @@ int _actr_quad_tree_bounds_contains(struct ActrQuadTreeBounds *bounds, struct Ac
 void _actr_quad_tree_grow(struct ActrQuadTree *tree)
 {
     long size = tree->bounds->right - tree->bounds->left;
+    actr_debug("grow size", size);
     long grow = (size) / 2;
+    actr_debug("grow grow", grow);
     struct ActrQuadTree *new;
     if (tree->one)
     {
@@ -154,13 +180,50 @@ int _actr_quad_tree_index(struct ActrQuadTree *tree, struct ActrQuadTreeBounds *
     }
     return 3;
 }
+void actr_quad_tree_draw(struct ActrQuadTree *tree)
+{
+    struct ActrQuadTreeLeaf *leaf;
+    if (tree->items)
+    {
+        for (int i = 0; i < tree->items->pointer; i++)
+        {
+            leaf = *(struct ActrQuadTreeLeaf **)(tree->items->head + i * sizeof(void *));
+            actr_canvas2d_stroke_rect(leaf->bounds->left - 0.5, leaf->bounds->top - 0.5, leaf->bounds->right - leaf->bounds->left, leaf->bounds->bottom - leaf->bounds->top);
+        }
+    }
+}
 void actr_quad_tree_insert(struct ActrQuadTree *tree, long top, long right, long bottom, long left, void *item)
 {
     struct ActrQuadTreeLeaf *leaf = _actr_quad_tree_leaf(top, right, bottom, left, item);
-    while (!_actr_quad_tree_bounds_contains(tree->bounds, leaf->bounds))
+    if (tree->root)
     {
-        _actr_quad_tree_grow(tree);
+        while (!_actr_quad_tree_bounds_contains(tree->bounds, leaf->bounds))
+        {
+            _actr_quad_tree_grow(tree);
+        }
+    }
+    if (!tree->items)
+    {
+        tree->items = actr_malloc(sizeof(struct ActrVector));
+        actr_vector_add(tree->items, leaf);
+        return;
+    } else if (tree->items) {
+        actr_vector_add(tree->items, leaf); 
     }
     int index = _actr_quad_tree_index(tree, leaf->bounds);
+
+    if (index == 1)
+    {
+    }
+    else if (index == 2)
+    {
+    }
+    else if (index == 3)
+    {
+    }
+    else if (index == 4)
+    {
+    }
+    actr_debug("qt insert index", index);
 }
 #endif
