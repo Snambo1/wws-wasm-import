@@ -11,9 +11,9 @@ void actr_init()
 {
     actr_sprng(actr_time());
     tree = actr_quad_tree_init();
-    for (int i = 0; i < 77; i++)
+    for (int i = 0; i < 1000; i++)
     {
-        actr_prngd();
+        actr_prngf();
     }
 }
 [[clang::export_name("actr_tap")]]
