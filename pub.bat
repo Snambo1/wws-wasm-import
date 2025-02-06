@@ -17,25 +17,19 @@ if "%script%" == "fetch-text.c" (
   ) else (
     SET apiKey=0
   )
-)
-
-if "%script%" == "fetch-json.c" (
+) else if "%script%" == "fetch-json.c" (
   if "%local%" == "local" (
     SET apiKey=ndkrj0cgsqxls7fktheaot4p13i6n0l21qp1giajqsuc8crztp
   ) else (
     SET apiKey=0
   )
-)
-
-if "%script%" == "script.c" (
+) else if "%script%" == "script.c" (
   if "%local%" == "local" (
     SET apiKey=yp4ojgaouw4ijvluhwwdpujavxoyw9c4kna1hq0pisgyu4sy2s
   ) else (
     SET apiKey=0
   )
-)
-
-if "%script%" == "hello-world.c" (
+) else if "%script%" == "hello-world.c" (
   if "%local%" == "local" (
     SET apiKey=uxgksrp1uz4kt6zb6an5osgcy9xm8qj0y103rn5g4b4drytovq
   ) else (
@@ -53,6 +47,12 @@ if "%script%" == "hello-world.c" (
   ) else (
     SET apiKey=0
   )
+) else if "%script%" == "ui-example.c" (
+  if "%local%" == "local" (
+    SET apiKey=wi6jg4eblourv9nvewc52y4p49a59zlzc30uhre7rd40sk5xee
+  ) else (
+    SET apiKey=0
+  )
 )
 
 
@@ -61,7 +61,7 @@ if "%script%" == "myScript" (
 )
 
 if "%apiKey%" == "" (
-  echo apiKey not assigned for file
+  echo apiKey not assigned for %script%
   exit
 )
 
