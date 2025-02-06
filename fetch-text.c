@@ -24,7 +24,7 @@ void actr_async_result(int handle, int success)
 }
 
 [[clang::export_name("actr_step")]]
-void actr_step(double delta)
+void actr_step(float delta)
 {
     if (asyncHandle == 0)
     {

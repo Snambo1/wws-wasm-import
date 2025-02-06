@@ -10,7 +10,7 @@ int tapCount = 0;
 void actr_init()
 {
     actr_sprng(actr_time());
-    tree = actr_quad_tree_init();
+    tree = actr_quad_tree_init(1, 256, 512, 512, 256);
     for (int i = 0; i < 1000; i++)
     {
         actr_prngf();
@@ -21,7 +21,9 @@ void actr_tap(long x, long y)
 {
     int *tap = actr_malloc(sizeof(int));
     *tap = tapCount++;
-    actr_quad_tree_insert(tree, y - 5, x + 5, y + 5, x - 5, tap);
+    int pad = 4;
+    actr_quad_tree_insert(tree, actr_quad_tree_leaf(y - pad, x + pad, y + pad, x - pad, tap));
+    // actr_quad_tree_insert(tree, 0, 20, 20, 0, tap);
 }
 
 int top = 0;

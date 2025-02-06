@@ -5,7 +5,7 @@
 void clearScreen();
 void printReport();
 void printLine(char *line);
-void printBar(double percent);
+void printBar(float percent);
 void draw();
 
 int top = 0;
@@ -53,7 +53,7 @@ void draw() {
     printReport();
 }
 
-void printBar(double percent) {
+void printBar(float percent) {
     double width = actrState->canvasSize.x * 0.5 - 20;
 
     actr_canvas2d_fill_style(0, 0, 255, 100);

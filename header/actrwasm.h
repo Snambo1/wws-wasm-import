@@ -7,7 +7,7 @@
 // all actr_canvas2d prefixed method will follow html CanvasRenderingContext2d as closly as possible
 // see docs at https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D
 
-extern void _actr_sanity_size(int intSize, int doubleSize, int stateSize, void * state);
+extern void _actr_sanity_size(unsigned int intSize, unsigned int longSize, unsigned int floatSize, unsigned int doubleSize, unsigned int stateSize, void * state);
 
 // end helpers
 struct ActrPoint
@@ -33,7 +33,7 @@ struct ActrState * actrState;
 void _actr_sanity()
 {
     actrState = actr_malloc(sizeof(struct ActrState));
-    _actr_sanity_size(sizeof(int), sizeof(double), sizeof(struct ActrState), actrState);
+    _actr_sanity_size(sizeof(int), sizeof(long long), sizeof(float), sizeof(double), sizeof(struct ActrState), actrState);
 }
 
 /// @brief get length of null terminated string

@@ -1,31 +1,69 @@
 #ifndef ACTRVECTOR_H
 #define ACTRVECTOR_H
 #include "actralloc.h"
+
 #define ACTRVECTOR_INCREMENT 8
+
 struct ActrVector
 {
-    int pointer;
-    int length;
-    void *head;
+    unsigned int increment;
+    unsigned int count;
+    unsigned int allocated;
+    void **head;
 };
-void actr_vector_add(struct ActrVector *list, void * item)
+
+struct ActrVector *actr_vector_init(unsigned int initialSize, unsigned int incrementSize)
 {
-    if (list->length == 0)
+    struct ActrVector *result = actr_malloc(sizeof(struct ActrVector));
+
+    result->increment = incrementSize;
+
+    if (initialSize > 0)
     {
-        list->head = actr_malloc(sizeof(void *) * ACTRVECTOR_INCREMENT);
-        list->length = ACTRVECTOR_INCREMENT;
+        result->head = actr_malloc(sizeof(void *) * initialSize);
+        result->allocated = initialSize;
     }
-    else if (list->pointer >= list->length)
+
+    return result;
+}
+
+int actr_vector_add(struct ActrVector *list, void *item)
+{
+    if (list->allocated == 0)
     {
-        void *newHead = actr_malloc(sizeof(void *) * (list->length + ACTRVECTOR_INCREMENT));
-        for (int i = 0; i < list->pointer; i++)
+        if (list->increment == 0)
         {
-            *(void**)(newHead + i * sizeof(void*)) = *(void**)(list->head + i * sizeof(void*));
+            return 0;
+        }
+        list->head = actr_malloc(sizeof(void *) * list->increment);
+        list->allocated = list->increment;
+    }
+    else if (list->count >= list->allocated)
+    {
+        if (list->increment == 0)
+        {
+            return 0;
+        }
+
+        void **newHead = actr_malloc(sizeof(void *) * (list->allocated + list->increment));
+        for (int i = 0; i < list->count; i++)
+        {
+            *(newHead + i) = *(list->head + i);
         }
         actr_free(list->head);
         list->head = newHead;
-        list->length += ACTRVECTOR_INCREMENT;        
+        list->allocated += list->increment;
     }
-    *(void**)(list->head + list->pointer++ * sizeof(void*)) = item;
+    // *(list->head + list->count++) = item;
+    list->head[list->count++] = item;
+    return 1;
+}
+void actr_vector_remove(struct ActrVector *list, unsigned int index)
+{
+    if (list->count > 1)
+    {
+        *(list->head + index) = *(list->head + list->count - 1);
+    }
+    list->count--;
 }
 #endif
