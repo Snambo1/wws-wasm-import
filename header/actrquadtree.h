@@ -62,27 +62,19 @@ int _actr_quad_tree_bounds_contains(struct ActrQuadTreeBounds *bounds, struct Ac
 
     if (other->top < bounds->top)
     {
-        actr_debug("1contains one", other->top);
-        actr_debug("2contains one", bounds->top);
         return 0;
     }
     // 566 > 0
     if (other->right > bounds->right)
     {
-        actr_debug("1contains two", other->right);
-        actr_debug("2contains two", bounds->right);
         return 0;
     }
     if (other->bottom > bounds->bottom)
     {
-        actr_debug("1contains three", other->bottom);
-        actr_debug("2contains three", bounds->bottom);
         return 0;
     }
     if (other->left < bounds->left)
     {
-        actr_debug("1contains four", other->left);
-        actr_debug("2contains four", bounds->left);
         return 0;
     }
     return 1;
@@ -93,9 +85,7 @@ int _actr_quad_tree_bounds_contains(struct ActrQuadTreeBounds *bounds, struct Ac
 void _actr_quad_tree_grow(struct ActrQuadTree *tree)
 {
     long size = tree->bounds->right - tree->bounds->left;
-    actr_debug("grow size", size);
     long grow = (size) / 2;
-    actr_debug("grow grow", grow);
     struct ActrQuadTree *new;
     if (tree->branch)
     {
@@ -141,8 +131,6 @@ void _actr_quad_tree_grow(struct ActrQuadTree *tree)
     tree->bounds->right += grow;
     tree->bounds->bottom += grow;
     tree->bounds->left -= grow;
-    // actr_debug("qt grew width", tree->bounds->right - tree->bounds->left);
-    // actr_debug("qt grew height", tree->bounds->bottom - tree->bounds->top);
 }
 int _actr_quad_tree_index(struct ActrQuadTree *tree, struct ActrQuadTreeBounds *bounds)
 {
@@ -150,13 +138,6 @@ int _actr_quad_tree_index(struct ActrQuadTree *tree, struct ActrQuadTreeBounds *
     // 4 3
     long ymid = tree->bounds->top + (tree->bounds->bottom - tree->bounds->top) / 2;
     long xmid = tree->bounds->left + (tree->bounds->right - tree->bounds->left) / 2;
-
-    actr_debug("top", tree->bounds->top);
-    actr_debug("right", tree->bounds->right);
-    actr_debug("bottom", tree->bounds->bottom);
-    actr_debug("left", tree->bounds->left);
-    actr_debug("xmid", xmid);
-    actr_debug("ymid", ymid);
 
     if (bounds->bottom < ymid)
     {
@@ -196,6 +177,20 @@ void _actr_quad_tree_draw_bounds(struct ActrQuadTreeBounds *bounds)
 void actr_quad_tree_draw(struct ActrQuadTree *tree)
 {
     struct ActrQuadTreeLeaf *leaf;
+
+    actr_canvas2d_stroke_style(0, 255, 0, 50);
+    _actr_quad_tree_draw_bounds(tree->bounds);
+
+    if (tree->branch)
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            if (tree->branch[i])
+            {
+                actr_quad_tree_draw(tree->branch[i]);
+            }
+        }
+    }
     if (tree->items)
     {
         actr_canvas2d_stroke_style(0, 255, 255, 50);
@@ -206,7 +201,8 @@ void actr_quad_tree_draw(struct ActrQuadTree *tree)
             // actr_canvas2d_stroke_rect(leaf->bounds->left + 0.5, leaf->bounds->top + 0.5, leaf->bounds->right - leaf->bounds->left, leaf->bounds->bottom - leaf->bounds->top);
         }
     }
-    if (tree->stuck) {
+    if (tree->stuck)
+    {
         actr_canvas2d_stroke_style(200, 200, 200, 50);
         for (int i = 0; i < tree->stuck->count; i++)
         {
@@ -215,17 +211,6 @@ void actr_quad_tree_draw(struct ActrQuadTree *tree)
             // actr_canvas2d_stroke_rect(leaf->bounds->left + 0.5, leaf->bounds->top + 0.5, leaf->bounds->right - leaf->bounds->left, leaf->bounds->bottom - leaf->bounds->top);
         }
     }
-
-    for (int i = 0; i < 4; i++)
-    {
-        if (tree->branch[i])
-        {
-            actr_quad_tree_draw(tree->branch[i]);
-        }
-    }
-
-    actr_canvas2d_stroke_style(0, 255, 0, 50);
-    _actr_quad_tree_draw_bounds(tree->bounds);
 }
 void actr_quad_tree_insert(struct ActrQuadTree *tree, struct ActrQuadTreeLeaf *leaf)
 {
@@ -240,13 +225,15 @@ void actr_quad_tree_insert(struct ActrQuadTree *tree, struct ActrQuadTreeLeaf *l
     {
         tree->items = actr_vector_init(4, 0);
     }
-    actr_vector_add(tree->items, leaf);
-    actr_debug("vec add count", tree->items->count);
+    if (actr_vector_add(tree->items, leaf) == 0)
+    {
+        actr_debug("FAIL FAIL FAIL", 0);
+    }
     if (tree->items->count < 4)
     {
         return;
     }
-    for (int i = 0; i < 4; i++)
+    for (int i = 0; i < tree->items->count; i++)
     {
         leaf = tree->items->head[i];
         // todo push items
@@ -295,8 +282,6 @@ void actr_quad_tree_insert(struct ActrQuadTree *tree, struct ActrQuadTreeLeaf *l
         }
 
         actr_quad_tree_insert(tree->branch[index], leaf);
-
-        actr_debug("qt insert index", index);
     }
     tree->items->count = 0;
 }
