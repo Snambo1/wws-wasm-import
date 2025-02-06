@@ -11,10 +11,10 @@ void actr_debug(char *ptr, int val)
 }
 struct ActrQuadTreeBounds
 {
-    long top;
-    long right;
-    long bottom;
-    long left;
+    int top;
+    int right;
+    int bottom;
+    int left;
 };
 struct ActrQuadTreeLeaf
 {
@@ -30,7 +30,7 @@ struct ActrQuadTree
     struct ActrQuadTree **branch;
 };
 
-struct ActrQuadTreeBounds *_actr_quad_tree_bounds(long top, long right, long bottom, long left)
+struct ActrQuadTreeBounds *_actr_quad_tree_bounds(int top, int right, int bottom, int left)
 {
     struct ActrQuadTreeBounds *bounds = actr_malloc(sizeof(struct ActrQuadTreeBounds));
     bounds->top = top;
@@ -39,7 +39,7 @@ struct ActrQuadTreeBounds *_actr_quad_tree_bounds(long top, long right, long bot
     bounds->left = left;
     return bounds;
 }
-struct ActrQuadTreeLeaf *actr_quad_tree_leaf(long top, long right, long bottom, long left, void *item)
+struct ActrQuadTreeLeaf *actr_quad_tree_leaf(int top, int right, int bottom, int left, void *item)
 {
     struct ActrQuadTreeLeaf *leaf = actr_malloc(sizeof(struct ActrQuadTreeLeaf));
     leaf->bounds = _actr_quad_tree_bounds(top, right, bottom, left);
@@ -84,8 +84,8 @@ int _actr_quad_tree_bounds_contains(struct ActrQuadTreeBounds *bounds, struct Ac
 
 void _actr_quad_tree_grow(struct ActrQuadTree *tree)
 {
-    long size = tree->bounds->right - tree->bounds->left;
-    long grow = (size) / 2;
+    int size = tree->bounds->right - tree->bounds->left;
+    int grow = (size) / 2;
     struct ActrQuadTree *new;
     if (tree->branch)
     {
@@ -136,8 +136,8 @@ int _actr_quad_tree_index(struct ActrQuadTree *tree, struct ActrQuadTreeBounds *
 {
     // 1 2
     // 4 3
-    long ymid = tree->bounds->top + (tree->bounds->bottom - tree->bounds->top) / 2;
-    long xmid = tree->bounds->left + (tree->bounds->right - tree->bounds->left) / 2;
+    int ymid = tree->bounds->top + (tree->bounds->bottom - tree->bounds->top) / 2;
+    int xmid = tree->bounds->left + (tree->bounds->right - tree->bounds->left) / 2;
 
     if (bounds->bottom < ymid)
     {
@@ -198,7 +198,6 @@ void actr_quad_tree_draw(struct ActrQuadTree *tree)
         {
             leaf = (struct ActrQuadTreeLeaf *)(tree->items->head[i]);
             _actr_quad_tree_draw_bounds(leaf->bounds);
-            // actr_canvas2d_stroke_rect(leaf->bounds->left + 0.5, leaf->bounds->top + 0.5, leaf->bounds->right - leaf->bounds->left, leaf->bounds->bottom - leaf->bounds->top);
         }
     }
     if (tree->stuck)
@@ -277,7 +276,7 @@ void actr_quad_tree_insert(struct ActrQuadTree *tree, struct ActrQuadTreeLeaf *l
                 right = tree->bounds->right;
                 left = right - width;
             }
-
+            
             tree->branch[index] = actr_quad_tree_init(0, top, right, bottom, left);
         }
 
