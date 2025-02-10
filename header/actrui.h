@@ -6,9 +6,9 @@
 
 struct ActrVector *_actr_ui_results;
 struct ActrQuadTree *_actr_ui_tree;
-int _actr_ui_sequence = 1;
+int _actr_ui_sequence = 0;
 
-int _actr_ui_hover = 0;
+int _actr_ui_hover = -1;
 
 enum ActrUIType
 {
@@ -25,7 +25,7 @@ struct ActrUIButton
     enum ActrUIType type;
     int identity;
     int x, y, w, h;
-    const char *text;
+    char *text;
     struct ActrQuadTreeLeaf *leaf;
 };
 
@@ -42,10 +42,11 @@ void actr_ui_move(int x, int y)
     struct ActrQuadTreeBounds area;
     area.x = x;
     area.y = y;
-    area.size = 1;
+    area.w = 1;
+    area.h = 1;
     actr_quad_tree_query(_actr_ui_tree, &area, _actr_ui_results);
 
-    int identity = 0;
+    int identity = -1;
     for (int i = 0; i < _actr_ui_results->count; i++)
     {
         struct ActrUIControl *type = (struct ActrUIControl *)_actr_ui_results->head[i];
@@ -59,15 +60,16 @@ void actr_ui_move(int x, int y)
 
 }
 
-void actr_ui_tap(int x, int y)
+int actr_ui_tap(int x, int y)
 {
     struct ActrQuadTreeBounds area;
     area.x = x;
     area.y = y;
-    area.size = 1;
+    area.w = 1;
+    area.h = 1;
     actr_quad_tree_query(_actr_ui_tree, &area, _actr_ui_results);
 
-    int identity = 0;
+    int identity = -1;
     for (int i = 0; i < _actr_ui_results->count; i++)
     {
         struct ActrUIControl *type = (struct ActrUIControl *)_actr_ui_results->head[i];
@@ -78,9 +80,11 @@ void actr_ui_tap(int x, int y)
 
     _actr_ui_results->count = 0;
 
+    return identity;
+
 }
 
-int actr_ui_button(int x, int y, int w, int h, const char *text)
+struct ActrUIButton *actr_ui_button(int x, int y, int w, int h, char *text)
 {
     struct ActrUIButton *button = actr_malloc(sizeof(struct ActrUIButton));
     button->type = ActrUITypeButton;
@@ -90,9 +94,9 @@ int actr_ui_button(int x, int y, int w, int h, const char *text)
     button->w = w;
     button->h = h;
     button->text = text;
-    button->leaf = actr_quad_tree_leaf(x, y, w > h ? w : h, button);
+    button->leaf = actr_quad_tree_leaf(x, y, w, h, button);
     actr_quad_tree_insert(_actr_ui_tree, button->leaf);
-    return button->identity;
+    return button;
 }
 extern void got_button();
 void _actr_ui_draw_button(struct ActrUIButton *button)
@@ -120,7 +124,8 @@ void actr_ui_draw()
     struct ActrQuadTreeBounds area;
     area.x = 0;
     area.y = 0;
-    area.size = actrState->canvasSize.x > actrState->canvasSize.y ? actrState->canvasSize.x : actrState->canvasSize.y;
+    area.w = actrState->canvasSize.x;
+    area.h = actrState->canvasSize.y;
     actr_quad_tree_query(_actr_ui_tree, &area, _actr_ui_results);
 
     for (int i = 0; i < _actr_ui_results->count; i++)
@@ -145,7 +150,6 @@ void actr_ui_draw()
     actr_canvas2d_fill_text(0, actrState->textSize.y, mem);
     actr_free(mem);
 
-    actr_quad_tree_draw(_actr_ui_tree);
 }
 
 #endif

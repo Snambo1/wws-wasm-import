@@ -47,4 +47,9 @@ unsigned long strlen(const char * string) {
     return result;
 }
 
+extern char* _actr_sprintf_length(char *format, unsigned long slen, void *data, unsigned long dlen);
+extern char* actr_sprintf(char *format, void *data, unsigned long dlen) {
+    return _actr_sprintf_length(format, strlen(format), data, dlen);
+}
+
 #endif
