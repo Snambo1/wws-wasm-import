@@ -4,6 +4,8 @@
         "xlocale": "c",
         "actrwasm.h": "c",
         "actrcanvas.h": "c",
-        "actralloc.h": "c"
+        "actralloc.h": "c",
+        "actrlog.h": "c",
+        "xiosbase": "cpp"
     }
 }

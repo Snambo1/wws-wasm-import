@@ -40,7 +40,7 @@ void _actr_sanity()
 /// @param string 
 /// @return length of the string
 unsigned long strlen(const char * string) {
-    int result = 0;
+    unsigned int result = 0;
     while (*string++) {
         result++;
     }

@@ -12,7 +12,10 @@ extern void actr_canvas2d_fill();
 extern void actr_canvas2d_fill_rect(float x, float y, float w, float h);
 extern void _actr_canvas2d_fill_text_length(float x, float y, char *text, int length);
 
-extern void actr_canvas2d_measure_text(char * text, int length);
+extern void _actr_canvas2d_measure_text_length(char * text, int length);
+void actr_canvas2d_measure_text(char * text) {
+    _actr_canvas2d_measure_text_length(text, strlen(text));
+}
 
 extern void actr_canvas2d_stroke();
 extern void actr_canvas2d_stroke_rect(float x, float y, float w, float h);

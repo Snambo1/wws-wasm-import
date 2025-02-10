@@ -73,7 +73,7 @@ if "%local%" == "local" (
 
 echo Building...
 
-clang %script% -I header --target=wasm32-unknown-unknown ^
+clang -fno-inline %script% -I header --target=wasm32-unknown-unknown -Wl,-z,stack-size=65536 ^
 --optimize=3 -nostdlib -nostdlibinc -nostdinc -nostdinc++ ^
 -Wl,--no-entry -Wl,--export-all -Wl,--error-limit=0 ^
 -Wl,--allow-undefined --wasm-opt --output %script%.wasm
@@ -93,7 +93,7 @@ if %ERRORLEVEL% == 0 (
 if %ERRORLEVEL% == 0 (
   echo.
   echo %script%.wasm uploaded
-  rm %script%.wasm
+  rem rm %script%.wasm
 ) else (
   echo %script%.wasm upload failed
 )
