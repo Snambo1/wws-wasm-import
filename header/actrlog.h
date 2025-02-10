@@ -5,7 +5,7 @@
 /// @brief use actr_log instead
 /// @param pointer 
 /// @param size 
-extern void actr_log_length(const char * pointer, unsigned long size);
+extern void actr_log_length(const char * pointer, int size);
 
 /// @brief used for debugging, log messages will appear in the browser console
 /// @param pointer 

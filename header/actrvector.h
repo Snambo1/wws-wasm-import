@@ -6,13 +6,13 @@
 
 struct ActrVector
 {
-    unsigned int increment;
-    unsigned int count;
-    unsigned int allocated;
+    int increment;
+    int count;
+    int allocated;
     void **head;
 };
 
-struct ActrVector *actr_vector_init(unsigned int initialSize, unsigned int incrementSize)
+struct ActrVector *actr_vector_init(int initialSize, int incrementSize)
 {
     struct ActrVector *result = actr_malloc(sizeof(struct ActrVector));
 
@@ -65,7 +65,7 @@ int actr_vector_add(struct ActrVector *list, void *item)
     return 1;
 }
 extern void remove_high_index();
-void actr_vector_remove(struct ActrVector *list, unsigned int index)
+void actr_vector_remove(struct ActrVector *list, int index)
 {
     if (index >= list->count) {
         remove_high_index();

@@ -3,8 +3,8 @@
 
 extern void actr_free(void *ptr);
 extern void actr_non_zero_mem();
-extern void *_actr_malloc(unsigned int size);
-void *actr_malloc(unsigned int size) {
+extern void *_actr_malloc(int size);
+void *actr_malloc(int size) {
     char * result = _actr_malloc(size);
     for (int i = 0; i < size; i++) {
         if (result[i] != 0) {

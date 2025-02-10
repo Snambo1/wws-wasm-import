@@ -16,7 +16,7 @@ struct ActrQuadTreeBounds
 {
     int x;
     int y;
-    unsigned int size;
+    int size;
 };
 
 struct ActrQuadTreeLeaf
@@ -24,7 +24,7 @@ struct ActrQuadTreeLeaf
     struct ActrQuadTreeBounds bounds;
     void *item;
 };
-struct ActrQuadTreeLeaf *actr_quad_tree_leaf(int x, int y, unsigned int size, void *item)
+struct ActrQuadTreeLeaf *actr_quad_tree_leaf(int x, int y, int size, void *item)
 {
     struct ActrQuadTreeLeaf *leaf = actr_malloc(sizeof(struct ActrQuadTreeLeaf));
     leaf->bounds.x = x;
@@ -42,7 +42,7 @@ struct ActrQuadTree
     struct ActrVector *stuck;
     struct ActrQuadTree **branch;
 };
-struct ActrQuadTree *actr_quad_tree_init(int root, int x, int y, unsigned int size)
+struct ActrQuadTree *actr_quad_tree_init(int root, int x, int y, int size)
 {
     struct ActrQuadTree *result = actr_malloc(sizeof(struct ActrQuadTree));
     result->root = root;
@@ -55,7 +55,12 @@ struct ActrQuadTree *actr_quad_tree_init(int root, int x, int y, unsigned int si
 
     return result;
 }
-extern void qt_cont(int result, int x1, int y1, unsigned int s1, int x2, int y2, unsigned int s2);
+extern void qt_cont(int result, int x1, int y1, int s1, int x2, int y2, int s2);
+extern void qtintersect1(int result, int x1, int y1, int s1, int x2, int y2, int s2);
+extern void qtintersect2(int result, int x1, int y1, int s1, int x2, int y2, int s2);
+extern void qtintersect3(int result, int x1, int y1, int s1, int x2, int y2, int s2);
+extern void qtintersect4(int result, int x1, int y1, int s1, int x2, int y2, int s2);
+extern void qtintersect5(int result, int x1, int y1, int s1, int x2, int y2, int s2);
 int _actr_quad_tree_bounds_intersects(struct ActrQuadTreeBounds *bounds, struct ActrQuadTreeBounds *other)
 {
     /*
@@ -64,35 +69,42 @@ int _actr_quad_tree_bounds_intersects(struct ActrQuadTreeBounds *bounds, struct 
         RectA.Top > RectB.Bottom &&
         RectA.Bottom < RectB.Top
     */
+    if (bounds->x >= other->x + other->size)
+    {
+        qtintersect1(0, bounds->x, bounds->y, bounds->size, other->x, other->y, other->size);
+        return 0;
+    }
 
-    return bounds->x < other->x + other->size &&
-           bounds->x + bounds->size > other->x &&
-           bounds->y < other->y + other->size &&
-           bounds->y + bounds->size > other->y;
+    // -128 > 
+    if (other->x >= bounds->x + bounds->size)
+    {
+        // catch all function env::qtintersect2(0, 798, 264, 5, -128, -128, 1024)
+        qtintersect2(0, bounds->x, bounds->y, bounds->size, other->x, other->y, other->size);
+        return 0;
+    }
+    if (bounds->y >= other->y + other->size)
+    {
+        qtintersect3(0, bounds->x, bounds->y, bounds->size, other->x, other->y, other->size);
+        return 0;
+    }
+    if (other->y >= bounds->y + bounds->size)
+    {
+        qtintersect4(0, bounds->x, bounds->y, bounds->size, other->x, other->y, other->size);
+        return 0;
+    }
+    qtintersect5(1, bounds->x, bounds->y, bounds->size, other->x, other->y, other->size);
+    return 1;
 }
 int _actr_quad_tree_bounds_contains(struct ActrQuadTreeBounds *bounds, struct ActrQuadTreeBounds *other)
 {
-    if (other->x < bounds->x)
+    if (bounds->x <= other->x &&
+        bounds->x + bounds->size >= other->x + other->size &&
+        bounds->y <= other->y &&
+        bounds->y + bounds->size >= other->y + other->size)
     {
-        return 0;
+        return 1;
     }
-
-    if (other->y < bounds->y)
-    {
-        return 0;
-    }
-
-    if (other->x + other->size > bounds->x + bounds->size)
-    {
-        return 0;
-    }
-
-    if (other->y + other->size > bounds->y + bounds->size)
-    {
-        return 0;
-    }
-
-    return 1;
+    return 0;
 }
 void _actr_quad_tree_grow(struct ActrQuadTree *tree)
 {
@@ -140,7 +152,7 @@ void _actr_quad_tree_grow(struct ActrQuadTree *tree)
     tree->bounds.y -= halfSize;
     tree->bounds.size += size;
 }
-extern void qt_indx(int index, int x1, int y1, unsigned int s1, int x2, int y2, unsigned int s2);
+extern void qt_indx(int index, int x1, int y1, int s1, int x2, int y2, int s2);
 int _actr_quad_tree_index(struct ActrQuadTree *tree, struct ActrQuadTreeBounds *bounds)
 {
     // 0 1
@@ -194,8 +206,8 @@ void actr_quad_tree_draw(struct ActrQuadTree *tree)
     {
         tree = trees->head[0];
 
-        actr_canvas2d_stroke_style(0, 255, 0, 50);
-        _actr_quad_tree_draw_bounds(&tree->bounds);
+        // actr_canvas2d_stroke_style(0, 255, 0, 50);
+        // _actr_quad_tree_draw_bounds(&tree->bounds);
 
         if (tree->items)
         {
@@ -229,19 +241,31 @@ void actr_quad_tree_draw(struct ActrQuadTree *tree)
         }
         actr_vector_remove(trees, 0);
     }
+    actr_free(trees->head);
     actr_free(trees);
 }
 extern void no_fit(int x1, int y1, int s1, int x2, int y2, int s2);
 extern void actr_no_conts();
 void actr_quad_tree_query(struct ActrQuadTree *root, struct ActrQuadTreeBounds *area, struct ActrVector *results)
 {
-    struct ActrVector *list = actr_vector_init(16, 16);    
-        
-    actr_vector_add(list, root);
+    struct ActrVector *list = actr_vector_init(16, 16);
+
+    if (_actr_quad_tree_bounds_intersects(area, &root->bounds))
+    {
+        actr_vector_add(list, root);
+    }
+
     while (list->count)
     {
         struct ActrQuadTree *tree = list->head[0];
         actr_vector_remove(list, 0);
+        for (int i = 0; i < 4; i++)
+        {
+            if (tree->branch[i] && _actr_quad_tree_bounds_intersects(area, &tree->branch[i]->bounds))
+            {
+                actr_vector_add(list, tree->branch[i]);
+            }
+        }
         for (int i = 0; i < tree->items->count; i++)
         {
             struct ActrQuadTreeLeaf *leaf = tree->items->head[i];
@@ -253,23 +277,15 @@ void actr_quad_tree_query(struct ActrQuadTree *root, struct ActrQuadTreeBounds *
 
         for (int i = 0; i < tree->stuck->count; i++)
         {
-            struct ActrQuadTreeLeaf *leaf = tree->items->head[i];
+            struct ActrQuadTreeLeaf *leaf = tree->stuck->head[i];
             if (_actr_quad_tree_bounds_intersects(area, &leaf->bounds))
             {
                 actr_vector_add(results, leaf->item);
             }
         }
-    
-        for (int i = 0; i < 4; i++) {
-            struct ActrQuadTree *branch = tree->branch[i];
-            if (!branch) {
-                continue;
-            }
-            if (_actr_quad_tree_bounds_intersects(area, &branch->bounds)) {
-                actr_vector_add(list, branch);
-            }
-        }
     }
+    actr_free(list->head);
+    actr_free(list);
 }
 
 void actr_quad_tree_insert(struct ActrQuadTree *tree, struct ActrQuadTreeLeaf *newLeaf)

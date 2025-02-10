@@ -7,7 +7,7 @@
 // all actr_canvas2d prefixed method will follow html CanvasRenderingContext2d as closly as possible
 // see docs at https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D
 
-extern void _actr_sanity_size(unsigned int intSize, unsigned int longSize, unsigned int floatSize, unsigned int doubleSize, unsigned int stateSize, void * state);
+extern void _actr_sanity_size(int intSize, int longSize, int floatSize, int doubleSize, int stateSize, void * state);
 
 // end helpers
 struct ActrPoint
@@ -39,8 +39,8 @@ void _actr_sanity()
 /// @brief get length of null terminated string
 /// @param string 
 /// @return length of the string
-unsigned long strlen(const char * string) {
-    unsigned int result = 0;
+int strlen(const char * string) {
+    int result = 0;
     while (*string++) {
         result++;
     }

@@ -1,6 +1,6 @@
 @echo off
 
-clear
+REM clear
 
 SET script=%1
 SET local=%2
@@ -71,7 +71,7 @@ if "%local%" == "local" (
   SET server=https://www.d1ag0n.com/api/Wasm/Upload/
 )
 
-echo Building...
+REM echo Building...
 
 clang -fno-inline %script% -I header --target=wasm32-unknown-unknown -Wl,-z,stack-size=65536 ^
 --optimize=3 -nostdlib -nostdlibinc -nostdinc -nostdinc++ ^
@@ -79,7 +79,7 @@ clang -fno-inline %script% -I header --target=wasm32-unknown-unknown -Wl,-z,stac
 -Wl,--allow-undefined --wasm-opt --output %script%.wasm
 
 if %ERRORLEVEL% == 0 (
-  echo Uploading...
+  REM echo Uploading...
   if "%local%" == "local" (
     curl -k --fail -F "data=@./%script%.wasm" "%server%%apiKey%%"
     ) else (
@@ -91,8 +91,8 @@ if %ERRORLEVEL% == 0 (
 )
 
 if %ERRORLEVEL% == 0 (
-  echo.
-  echo %script%.wasm uploaded
+  REM echo.
+  REM echo %script%.wasm uploaded
   rem rm %script%.wasm
 ) else (
   echo %script%.wasm upload failed
