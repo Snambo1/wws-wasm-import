@@ -64,17 +64,16 @@ int actr_vector_add(struct ActrVector *list, void *item)
     list->count++;
     return 1;
 }
-extern void remove_high_index();
 void actr_vector_remove(struct ActrVector *list, int index)
 {
-    if (index >= list->count) {
-        remove_high_index();
-        return;
-    }
     if (list->count > 0 )
     {
         list->head[index] = list->head[list->count - 1];
     }
     list->count--;
+}
+void actr_vector_free(struct ActrVector *list) {
+    actr_free(list->head);
+    actr_free(list);
 }
 #endif

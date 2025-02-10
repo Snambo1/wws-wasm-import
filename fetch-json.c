@@ -8,7 +8,7 @@
 // fetch json example
 
 int asyncHandle = 0;
-char * text = "loading will begin shortly...";
+unsigned char * text = "loading will begin shortly...";
 
 [[clang::export_name("actr_async_result")]]
 void actr_async_result(int handle, int success)

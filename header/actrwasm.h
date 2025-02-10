@@ -39,7 +39,7 @@ void _actr_sanity()
 /// @brief get length of null terminated string
 /// @param string 
 /// @return length of the string
-int strlen(const char * string) {
+unsigned long strlen(const char * string) {
     int result = 0;
     while (*string++) {
         result++;
