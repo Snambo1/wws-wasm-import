@@ -51,7 +51,7 @@ if "%script%" == "fetch-text.c" (
   if "%local%" == "local" (
     SET apiKey=wi6jg4eblourv9nvewc52y4p49a59zlzc30uhre7rd40sk5xee
   ) else (
-    SET apiKey=3f60l8znhuu0fdwkg2j9gjccr6p6p8si4zrrsgzlb42te6m1m5
+    SET apiKey=0
   )
 )
 
