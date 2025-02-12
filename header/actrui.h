@@ -98,7 +98,7 @@ struct ActrUIButton *actr_ui_button(int x, int y, int w, int h, char *text)
     actr_quad_tree_insert(_actr_ui_tree, button->leaf);
     return button;
 }
-extern void got_button();
+
 void _actr_ui_draw_button(struct ActrUIButton *button)
 {
     if (_actr_ui_hover == button->identity) {
@@ -116,7 +116,7 @@ void _actr_ui_draw_button(struct ActrUIButton *button)
     actr_canvas2d_stroke_style(200, 200, 200, 100);
     actr_canvas2d_stroke_rect(button->x, button->y, button->w, button->h);
 }
-void actr_ui_draw()
+void actr_ui_draw(double delta)
 {
     // clear canvas
     actr_canvas2d_fill_style(0, 0, 0, 100);

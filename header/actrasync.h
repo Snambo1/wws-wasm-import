@@ -1,4 +1,9 @@
 #ifndef ACTRASYNC_H
 #define ACTRASYNC_H
-void actr_async_result(int handle, int success);
+enum AsyncResult {
+    AsyncResultSuccess = 1,
+    AsyncResultFailure = 0,
+    AsyncResultAPIError = -1
+};
+void actr_async_result(int handle, enum AsyncResult success);
 #endif

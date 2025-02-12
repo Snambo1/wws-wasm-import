@@ -5,5 +5,5 @@
 /// @return allocated string must be freed 
 extern char * actr_time_string();
 // epoch time in seconds
-int actr_time();
+long long actr_time();
 #endif

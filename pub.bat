@@ -19,7 +19,7 @@ if "%script%" == "fetch-text.c" (
   )
 ) else if "%script%" == "fetch-json.c" (
   if "%local%" == "local" (
-    SET apiKey=ndkrj0cgsqxls7fktheaot4p13i6n0l21qp1giajqsuc8crztp
+    SET apiKey=oetjdp5c2jwzouzontl3kwh1gwbrimo74nhada772u5sygto38
   ) else (
     SET apiKey=0
   )

@@ -35,7 +35,6 @@ const int MAP = 99;
 void actr_init()
 {
   actr_map_set_int(MAP, "click", 0);
-  actr_log("WASM initialized.");
 }
 
 [[clang::export_name("actr_async_result")]]
@@ -51,7 +50,6 @@ void actr_tap(double x, double y)
 {
   click++;
   actr_malloc(1);
-  actr_log("WASM got tap.");
 }
 
 // optional this is called in request animation frame

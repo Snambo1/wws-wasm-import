@@ -27,7 +27,6 @@ struct ActrState
 
 struct ActrState * actrState;
 
-
 /// @brief internal use
 [[clang::export_name("_actr_sanity")]]
 void _actr_sanity()
@@ -46,10 +45,13 @@ unsigned long strlen(const char * string) {
     }
     return result;
 }
-
-extern char* _actr_sprintf_length(char *format, unsigned long slen, void *data, unsigned long dlen);
-extern char* actr_sprintf(char *format, void *data, unsigned long dlen) {
-    return _actr_sprintf_length(format, strlen(format), data, dlen);
+char *actr_heap_string(char *text)
+{
+    int size = strlen(text);
+    char *result = actr_malloc(size + 1);
+    for (int i = 0; i < size; i++) {
+        result[i] = text[i];
+    }
+    return result;
 }
-
 #endif
