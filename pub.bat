@@ -72,9 +72,9 @@ if "%local%" == "local" (
 )
 
 REM echo Building...
-
-clang -fno-inline %script% -I header --target=wasm32-unknown-unknown -Wl,-z,stack-size=65536 ^
---optimize=3 -nostdlib -nostdlibinc -nostdinc -nostdinc++ ^
+REM -fno-inline -nostdlib -nostdlibinc -nostdinc -nostdinc++
+clang  %script% -I header --target=wasm32-unknown-unknown -Wl,-z,stack-size=65536 ^
+--optimize=3 -nostdlib -nostdlibinc -nostdinc -nostdinc++ -fno-builtin ^
 -Wl,--no-entry -Wl,--export-all -Wl,--error-limit=0 ^
 -Wl,--allow-undefined --wasm-opt --output %script%.wasm
 
