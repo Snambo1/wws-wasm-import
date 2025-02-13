@@ -1,12 +1,10 @@
 {
     "C_Cpp.errorSquiggles": "disabled",
     "files.associations": {
-        "xlocale": "c",
         "actrwasm.h": "c",
         "actrcanvas.h": "c",
         "actralloc.h": "c",
         "actrlog.h": "c",
-        "xiosbase": "cpp",
-        "actrasync.h": "c"
+        "actrasync.h": "c",
     }
 }
