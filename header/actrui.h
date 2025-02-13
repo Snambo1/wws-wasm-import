@@ -35,8 +35,6 @@ void actr_ui_init()
     _actr_ui_tree = actr_quad_tree_init(1, 256, 256, 64);
 }
 
-extern void tap_identity(int identity);
-
 void actr_ui_move(int x, int y)
 {
     struct ActrQuadTreeBounds area;

@@ -8,7 +8,7 @@
 // see docs at https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D
 
 extern void _actr_sanity_size(int intSize, int longSize, int floatSize, int doubleSize, int stateSize, void * state);
-
+extern int actr_authenticated();
 // end helpers
 struct ActrPoint
 {
