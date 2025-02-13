@@ -94,6 +94,7 @@ struct ActrUIControl *actr_ui_get_control(int identity)
 
 void _actr_ui_container_dispose(struct ActrUIControlContainer *container)
 {
+    actr_free(container->leaf);
     actr_free(container);
 }
 
@@ -463,9 +464,15 @@ void _actr_ui_draw_text(struct ActrUIControlText *text)
 void _actr_ui_draw_container(struct ActrUIControlContainer *container)
 {
     unsigned char r, g, b, a;
+
+    actr_unpack_bytes(container->backgroundColor, &r, &g, &b, &a);
+    actr_canvas2d_fill_style(r, g, b, a);
+    actr_canvas2d_fill_rect(container->leaf->bounds.point.x, container->leaf->bounds.point.y, container->leaf->bounds.size.w, container->leaf->bounds.size.h);
+
     actr_unpack_bytes(container->foregroundColor, &r, &g, &b, &a);
     actr_canvas2d_stroke_style(r, g, b, a);
     actr_canvas2d_stroke_rect(container->leaf->bounds.point.x, container->leaf->bounds.point.y, container->leaf->bounds.size.w, container->leaf->bounds.size.h);
+
 }
 void _actr_ui_draw_button(struct ActrUIControlButton *button)
 {

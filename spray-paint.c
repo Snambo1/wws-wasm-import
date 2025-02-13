@@ -53,6 +53,7 @@ void actr_init()
     state->purpleButton = actr_ui_button(10, top += 50, width, 20, "PURPLE")->identity;
     state->grayButton = actr_ui_button(10, top += 50, width, 20, "GRAY")->identity;
     state->deleteButton = actr_ui_button(10, top += 50, width, 20, "DELETE")->identity;
+    state->color = actr_pack_bytes(255,255,255,100);
     state->results = actr_vector_init(4, 4);
 }
 
@@ -131,8 +132,8 @@ void actr_pointer_move(int x, int y)
         return;
     }
     struct ActrQuadTreeBounds bounds;
-    int size = 10;
-    for (int i = 0; i < 1; i++)
+    int size = 50;
+    for (int i = 0; i < 100; i++)
     {
         bounds.point.x = x + actr_prng() * size - size / 2;
         bounds.point.y = y + actr_prng() * size - size / 2;
@@ -145,13 +146,13 @@ void actr_pointer_move(int x, int y)
         {
             if (state->delete == 0)
             {
-                struct MyPixel *pix = actr_malloc(sizeof(struct MyPixel));
-                pix->point = bounds.point;
-                pix->size = bounds.size;
+                struct MyPixel pix;
+                pix.point = bounds.point;
+                pix.size = bounds.size;
                 // pix->color = actr_prng() * 0xffffffff;
-                pix->color = state->color;
+                pix.color = state->color;
 
-                actr_ui_container(pix->point.x, pix->point.y, pix->size.w, pix->size.h, state->color, 0);
+                actr_ui_container(pix.point.x, pix.point.y, pix.size.w, pix.size.h, state->color, state->color);
             }
         } else {
             if (state->delete) {
