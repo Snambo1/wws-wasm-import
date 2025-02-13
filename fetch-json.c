@@ -24,6 +24,7 @@ struct MyData
     char *text;
     int state;
     struct ActrUIButton *button;
+    int failCount;
 };
 
 struct MyData *data;
@@ -39,6 +40,11 @@ void reformatButton()
     struct ActrFormatState *format = actr_format("Click Count: %s");
     actr_format_int(format, tapCount);
     data->button->text = actr_format_close(format);
+}
+[[clang::export_name("actr_key_down")]]
+void actr_key_down(char key)
+{
+    actr_ui_key_down(key);
 }
 
 [[clang::export_name("actr_init")]]
@@ -103,6 +109,7 @@ void actr_async_result(int handle, enum AsyncResult success)
             break;
         case AsyncResultAPIError:
             // json_store/load/delete will fail this way if no user/not logged in or connection failure
+            data->failCount++;
             break;
         }
     }
@@ -120,4 +127,9 @@ void actr_step(double delta)
     {
         actr_canvas2d_fill_text(20, 90, "User not is authenticated. Persistence disabled.");
     }
+    struct ActrFormatState *format = actr_format("Load/Store failures: %s");
+    actr_format_int(format, data->failCount);
+    char * text = actr_format_close(format);
+    actr_canvas2d_fill_text(20, 110, text);
+    actr_free(text);
 }

@@ -1,6 +1,6 @@
 @echo off
 
-REM clear
+clear
 
 SET script=%1
 SET local=%2
@@ -49,7 +49,7 @@ if "%script%" == "fetch-text.c" (
   )
 ) else if "%script%" == "ui-example.c" (
   if "%local%" == "local" (
-    SET apiKey=wi6jg4eblourv9nvewc52y4p49a59zlzc30uhre7rd40sk5xee
+    SET apiKey=otac2bghabhk1uv1j5fz78797bt2k4p28vxpz4x8o15tl7snhm
   ) else (
     SET apiKey=0
   )
@@ -91,8 +91,8 @@ if %ERRORLEVEL% == 0 (
 )
 
 if %ERRORLEVEL% == 0 (
-  REM echo.
-  REM echo %script%.wasm uploaded
+  echo.
+  echo %script%.wasm uploaded to %server%
   rem rm %script%.wasm
 ) else (
   echo %script%.wasm upload failed

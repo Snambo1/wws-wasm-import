@@ -17,6 +17,9 @@ void actr_canvas2d_measure_text(char * text) {
     _actr_canvas2d_measure_text_length(text, strlen(text));
 }
 
+extern void actr_canvas_lineto(float x, float y);
+extern void actr_canvas_moveto(float x, float y);
+
 extern void actr_canvas2d_stroke();
 extern void actr_canvas2d_stroke_rect(float x, float y, float w, float h);
 

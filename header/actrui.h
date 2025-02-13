@@ -4,140 +4,365 @@
 #include "actrquadtree.h"
 #include "actrcanvas.h"
 
-struct ActrVector *_actr_ui_results;
-struct ActrQuadTree *_actr_ui_tree;
-int _actr_ui_sequence = 0;
-
-int _actr_ui_hover = -1;
+struct ActrUIState
+{
+    struct ActrVector *controls;
+    struct ActrVector *results;
+    struct ActrQuadTree *tree;
+    int sequence;
+    int hover;
+    int focus;
+};
 
 enum ActrUIType
 {
-    ActrUITypeButton
+    ActrUITypeButton,
+    ActrUITypeText
 };
 
-struct ActrUIControl {
-    enum ActrUIType type;
-    int identity;
-    
-};
-struct ActrUIButton
+struct ActrUIControl
 {
     enum ActrUIType type;
     int identity;
-    int x, y, w, h;
-    char *text;
     struct ActrQuadTreeLeaf *leaf;
 };
+struct ActrUIControlButton
+{
+    enum ActrUIType type;
+    int identity;
+    struct ActrQuadTreeLeaf *leaf;
+    char *label;
+};
+struct ActrUIControlText
+{
+    enum ActrUIType type;
+    int identity;
+    struct ActrQuadTreeLeaf *leaf;
+    char *value;
+    int cursor;
+};
+
+struct ActrUIState *_actr_ui_state;
 
 void actr_ui_init()
 {
-    _actr_ui_results = actr_vector_init(8, 8);
-    _actr_ui_tree = actr_quad_tree_init(1, 256, 256, 64);
+    _actr_ui_state = actr_malloc(sizeof(struct ActrUIState));
+    _actr_ui_state->controls = actr_vector_init(8, 8);
+    _actr_ui_state->results = actr_vector_init(8, 8);
+    _actr_ui_state->tree = actr_quad_tree_init(1, 256, 256, 64);
+    _actr_ui_state->sequence = 1;
+    _actr_ui_state->focus = 0;
+    _actr_ui_state->hover = 0;
+}
+extern void uibutton(int key);
+void actr_ui_key_down_text(struct ActrUIControlText *text, int key)
+{
+    uibutton(key);
+    int newLength;
+    char *newValue;
+    int currentLength = strlen(text->value);
+    if (key == 1)
+    {
+        // left arrow
+        text->cursor--;
+        if (text->cursor < 0)
+        {
+            text->cursor = 0;
+        }
+    }
+    else if (key == 2)
+    {
+        // right arrow
+        text->cursor++;
+        if (text->cursor > currentLength)
+        {
+            text->cursor = currentLength;
+        }
+    }
+    else if (key == 3)
+    {
+        // backspace
+        if (text->cursor == 0)
+        {
+            return;
+        }
+        newLength = currentLength - 1;
+        newValue = actr_malloc(newLength + 1);
+        for (int i = 0; i < newLength; i++)
+        {
+            if (i < text->cursor - 1)
+            {
+                newValue[i] = text->value[i];
+            }
+            else
+            {
+                newValue[i] = text->value[i + 1];
+            }
+        }
+        actr_free(text->value);
+        text->value = newValue;
+        text->cursor--;
+    }
+    else if (key == 4)
+    {
+        // delete
+        if (text->cursor == currentLength)
+        {
+            return;
+        }
+        newLength = currentLength - 1;
+        newValue = actr_malloc(newLength + 1);
+        for (int i = 0; i < newLength; i++)
+        {
+            if (i <= text->cursor - 1)
+            {
+                newValue[i] = text->value[i];
+            }
+            else
+            {
+                newValue[i] = text->value[i + 1];
+            }
+        }
+        actr_free(text->value);
+        text->value = newValue;
+    }
+    else if (key >= 32 && key <= 126)
+    {
+        newLength = currentLength + 1;
+        newValue = actr_malloc(newLength + 1);
+
+        for (int i = 0; i < newLength; i++)
+        {
+            if (i < text->cursor)
+            {
+                newValue[i] = text->value[i];
+            }
+            else if (i == text->cursor)
+            {
+                newValue[i] = key;
+            }
+            else
+            {
+                newValue[i] = text->value[i - 1];
+            }
+        }
+        actr_free(text->value);
+        text->value = newValue;
+        text->cursor++;
+    }
+}
+int actr_ui_key_down(int key)
+{
+
+    // key
+    // 1 left arrow
+    // 2 right arrow
+    // 3 backspace
+    //  - 31 are available
+    // when key >= 32 and key <= 126 normal ascii codes
+    struct ActrUIControl *control;
+
+    int focus = _actr_ui_state->focus;
+    if (focus < 1)
+    {
+        return focus;
+    }
+    control = (struct ActrUIControl *)_actr_ui_state->controls->head[focus - 1];
+    switch (control->type)
+    {
+    case ActrUITypeButton:
+        break;
+    case ActrUITypeText:
+        actr_ui_key_down_text((struct ActrUIControlText *)control, key);
+        break;
+    }
+    return focus;
 }
 
+void _actr_ui_query(int x, int y, int w, int h)
+{
+    struct ActrQuadTreeBounds area;
+    area.x = x;
+    area.y = y;
+    area.w = w;
+    area.h = h;
+    actr_quad_tree_query(_actr_ui_state->tree, &area, _actr_ui_state->results);
+}
 void actr_ui_move(int x, int y)
 {
-    struct ActrQuadTreeBounds area;
-    area.x = x;
-    area.y = y;
-    area.w = 1;
-    area.h = 1;
-    actr_quad_tree_query(_actr_ui_tree, &area, _actr_ui_results);
+    _actr_ui_query(x, y, 1, 1);
 
     int identity = -1;
-    for (int i = 0; i < _actr_ui_results->count; i++)
+    for (int i = 0; i < _actr_ui_state->results->count; i++)
     {
-        struct ActrUIControl *type = (struct ActrUIControl *)_actr_ui_results->head[i];
-        if (type->identity > identity) {
+        struct ActrUIControl *type = (struct ActrUIControl *)_actr_ui_state->results->head[i];
+        if (type->identity > identity)
+        {
             identity = type->identity;
         }
     }
-    _actr_ui_hover = identity;
-
-    _actr_ui_results->count = 0;
-
+    _actr_ui_state->hover = identity;
+    _actr_ui_state->results->count = 0;
 }
-
+void _actr_ui_set_focus(int identity)
+{
+    if (identity < 1)
+    {
+        _actr_ui_state->focus = 0;
+        return;
+    }
+    if (_actr_ui_state->focus == identity)
+    {
+        return;
+    }
+    _actr_ui_state->focus = identity;
+    struct ActrUIControl *control = (struct ActrUIControl *)_actr_ui_state->controls->head[identity - 1];
+    if (control->type == ActrUITypeText)
+    {
+        struct ActrUIControlText *text = (struct ActrUIControlText *)control;
+        text->cursor = strlen(text->value);
+    }
+}
 int actr_ui_tap(int x, int y)
 {
-    struct ActrQuadTreeBounds area;
-    area.x = x;
-    area.y = y;
-    area.w = 1;
-    area.h = 1;
-    actr_quad_tree_query(_actr_ui_tree, &area, _actr_ui_results);
+    _actr_ui_query(x, y, 1, 1);
 
-    int identity = -1;
-    for (int i = 0; i < _actr_ui_results->count; i++)
+    int identity = 0;
+    for (int i = 0; i < _actr_ui_state->results->count; i++)
     {
-        struct ActrUIControl *type = (struct ActrUIControl *)_actr_ui_results->head[i];
-        if (type->identity > identity) {
+        struct ActrUIControl *type = (struct ActrUIControl *)_actr_ui_state->results->head[i];
+        if (type->identity > identity)
+        {
             identity = type->identity;
         }
     }
 
-    _actr_ui_results->count = 0;
-
+    _actr_ui_state->results->count = 0;
+    _actr_ui_set_focus(identity);
     return identity;
-
 }
 
-struct ActrUIButton *actr_ui_button(int x, int y, int w, int h, char *text)
+struct ActrUIControlButton *actr_ui_button(int x, int y, int w, int h, char *label)
 {
-    struct ActrUIButton *button = actr_malloc(sizeof(struct ActrUIButton));
+    struct ActrUIControlButton *button = actr_malloc(sizeof(struct ActrUIControlButton));
+
     button->type = ActrUITypeButton;
-    button->identity = _actr_ui_sequence++;
-    button->x = x;
-    button->y = y;
-    button->w = w;
-    button->h = h;
-    button->text = text;
+    button->identity = _actr_ui_state->sequence++;
     button->leaf = actr_quad_tree_leaf(x, y, w, h, button);
-    actr_quad_tree_insert(_actr_ui_tree, button->leaf);
+    button->label = label;
+
+    actr_quad_tree_insert(_actr_ui_state->tree, button->leaf);
+    actr_vector_add(_actr_ui_state->controls, button);
     return button;
 }
 
-void _actr_ui_draw_button(struct ActrUIButton *button)
+struct ActrUIControlText *actr_ui_text(int x, int y, int w, int h, char *value)
 {
-    if (_actr_ui_hover == button->identity) {
-    actr_canvas2d_fill_style(100, 200, 100, 100);
+    struct ActrUIControlText *text = actr_malloc(sizeof(struct ActrUIControlText));
 
-    }else{
-    actr_canvas2d_fill_style(100, 100, 100, 100);
+    text->type = ActrUITypeText;
+    text->identity = _actr_ui_state->sequence++;
+    text->leaf = actr_quad_tree_leaf(x, y, w, h, text);
+    text->value = value;
 
+    actr_quad_tree_insert(_actr_ui_state->tree, text->leaf);
+    actr_vector_add(_actr_ui_state->controls, text);
+    return text;
+}
+
+void _actr_ui_set_focus_style(int focused)
+{
+    if (focused)
+    {
+        actr_canvas2d_stroke_style(150, 250, 150, 100);
     }
-    actr_canvas2d_fill_rect(button->x, button->y, button->w, button->h);
+    else
+    {
+        actr_canvas2d_stroke_style(200, 200, 200, 100);
+    }
+}
+void _actr_ui_set_hover_style(int hovered)
+{
+    if (hovered)
+    {
+        actr_canvas2d_fill_style(150, 200, 150, 100);
+    }
+    else
+    {
+        actr_canvas2d_fill_style(150, 150, 150, 100);
+    }
+}
+
+void _actr_ui_draw_text(struct ActrUIControlText *text)
+{
+    struct ActrQuadTreeBounds *bounds = &text->leaf->bounds;
+    _actr_ui_set_hover_style(_actr_ui_state->hover == text->identity);
+
+    actr_canvas2d_fill_rect(bounds->x, bounds->y, bounds->w, bounds->h);
 
     actr_canvas2d_fill_style(0, 0, 0, 100);
-    actr_canvas2d_fill_text(button->x + 5, button->y + button->h - 5, button->text);
+    actr_canvas2d_fill_text(bounds->x + 5, bounds->y + bounds->h - 5, text->value);
 
-    actr_canvas2d_stroke_style(200, 200, 200, 100);
-    actr_canvas2d_stroke_rect(button->x, button->y, button->w, button->h);
+    int focused = _actr_ui_state->focus == text->identity;
+    _actr_ui_set_focus_style(focused);
+    actr_canvas2d_stroke_rect(bounds->x, bounds->y, bounds->w, bounds->h);
+
+    if (focused)
+    {
+        actr_canvas2d_stroke_style(0, 0, 255, 100);
+        actr_canvas2d_begin_path();
+        int charWidth = 9;
+        int cursorStart = bounds->x + 5;
+        actr_canvas_moveto(cursorStart + text->cursor * charWidth, bounds->y + bounds->h - 3);
+        actr_canvas_lineto(cursorStart + (text->cursor + 1) * charWidth, bounds->y + bounds->h - 3);
+        actr_canvas2d_stroke();
+    }
+}
+
+void _actr_ui_draw_button(struct ActrUIControlButton *button)
+{
+    struct ActrQuadTreeBounds *bounds = &button->leaf->bounds;
+
+    _actr_ui_set_hover_style(_actr_ui_state->hover == button->identity);
+
+    actr_canvas2d_fill_rect(bounds->x, bounds->y, bounds->w, bounds->h);
+
+    actr_canvas2d_fill_style(0, 0, 0, 100);
+    actr_canvas2d_fill_text(bounds->x + 5, bounds->y + bounds->h - 5, button->label);
+
+    if (_actr_ui_state->focus == button->identity)
+    {
+        actr_canvas2d_stroke_style(200, 250, 200, 100);
+    }
+    else
+    {
+        actr_canvas2d_stroke_style(200, 200, 200, 100);
+    }
+    actr_canvas2d_stroke_rect(bounds->x, bounds->y, bounds->w, bounds->h);
 }
 void actr_ui_draw(double delta)
 {
     // clear canvas
     actr_canvas2d_fill_style(0, 0, 0, 100);
-    actr_canvas2d_fill_rect(-10, -10, actrState->canvasSize.x + 20, actrState->canvasSize.y + 20);
-    struct ActrQuadTreeBounds area;
-    area.x = 0;
-    area.y = 0;
-    area.w = actrState->canvasSize.x;
-    area.h = actrState->canvasSize.y;
-    actr_quad_tree_query(_actr_ui_tree, &area, _actr_ui_results);
+    actr_canvas2d_fill_rect(-10, -10, actrState->canvasSize.w + 20, actrState->canvasSize.h + 20);
 
-    for (int i = 0; i < _actr_ui_results->count; i++)
+    _actr_ui_query(0, 0, actrState->canvasSize.w, actrState->canvasSize.h);
+
+    for (int i = 0; i < _actr_ui_state->results->count; i++)
     {
-        enum ActrUIType *type = (enum ActrUIType *)_actr_ui_results->head[i];
+        enum ActrUIType *type = (enum ActrUIType *)_actr_ui_state->results->head[i];
         switch (*type)
         {
         case ActrUITypeButton:
-            _actr_ui_draw_button(_actr_ui_results->head[i]);
+            _actr_ui_draw_button(_actr_ui_state->results->head[i]);
+            break;
+        case ActrUITypeText:
+            _actr_ui_draw_text(_actr_ui_state->results->head[i]);
             break;
         }
     }
 
-    _actr_ui_results->count = 0;
+    _actr_ui_state->results->count = 0;
 
     // draw memory report
     char *mem = actr_memory_report();
@@ -147,7 +372,6 @@ void actr_ui_draw(double delta)
     actr_canvas2d_fill_style(255, 255, 255, 100);
     actr_canvas2d_fill_text(0, actrState->textSize.y, mem);
     actr_free(mem);
-
 }
 
 #endif

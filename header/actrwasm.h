@@ -15,10 +15,17 @@ struct ActrPoint
     int x;
     int y;
 };
+
+struct ActrSize
+{
+    int w;
+    int h;
+};
+
 struct ActrState
 {
     // canvasSize will be updated automatically
-    struct ActrPoint canvasSize;
+    struct ActrSize canvasSize;
     // pointer position will be updated automatically
     struct ActrPoint pointerPosition;
     // text size will be updated when actr_canvas2d_measureText is called
