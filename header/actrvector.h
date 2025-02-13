@@ -28,15 +28,21 @@ struct ActrVector *actr_vector_init(int initialSize, int incrementSize)
 
     return result;
 }
-extern void add_no_increment1();
-extern void add_no_increment2();
+int actr_vector_find(struct ActrVector *list, void *item)
+{
+    for (int i = 0; i < list->count; i++) {
+        if (list->head[i] == item) {
+            return i;
+        }
+    }
+    return -1;
+}
 int actr_vector_add(struct ActrVector *list, void *item)
 {
     if (list->allocated == 0)
     {
         if (list->increment == 0)
         {
-            add_no_increment1();
             return 0;
         }
         list->head = actr_malloc(sizeof(void *) * list->increment);
@@ -46,7 +52,6 @@ int actr_vector_add(struct ActrVector *list, void *item)
     {
         if (list->increment == 0)
         {
-            add_no_increment2();
             return 0;
         }
         list->allocated += list->increment;
