@@ -3,10 +3,11 @@
 #include "actrwasm.h"
 #include "actrquadtree.h"
 #include "actrcanvas.h"
+#include "actrhashtable.h"
 
 struct ActrUIState
 {
-    struct ActrVector *controls;
+    struct ActrHashTable *controls;
     struct ActrVector *results;
     struct ActrQuadTree *tree;
     int sequence;
@@ -61,19 +62,44 @@ struct ActrUIControlContainer
     int hidden;
     struct ActrUIControlContainer *container;
 };
+
+void _actr_ui_button_dispose(struct ActrUIControlButton *button);
+void _actr_ui_text_dispose(struct ActrUIControlText *text);
+
 struct ActrUIState *_actr_ui_state;
 
 void actr_ui_init()
 {
     _actr_ui_state = actr_malloc(sizeof(struct ActrUIState));
-    _actr_ui_state->controls = actr_vector_init(8, 8);
+    _actr_ui_state->controls = actr_hash_table_init();
     _actr_ui_state->results = actr_vector_init(8, 8);
-    _actr_ui_state->tree = actr_quad_tree_init(1, 256, 256, 64);
+    _actr_ui_state->tree = actr_quad_tree_init(1, 256, 256, 64, 0);
     _actr_ui_state->sequence = 1;
     _actr_ui_state->focus = 0;
     _actr_ui_state->hover = 0;
 }
 extern void uibutton(int key);
+
+struct ActrUIControl *actr_ui_get_control(int identity)
+{
+    return actr_hash_table_find(_actr_ui_state->controls, identity);
+}
+
+void actr_ui_remove_control(int identity)
+{
+    struct ActrUIControl *control = actr_ui_get_control(identity);
+    actr_quad_tree_remove(control->leaf);
+    switch (control->type)
+    {
+    case ActrUITypeButton:
+        _actr_ui_button_dispose(control);
+        break;
+    case ActrUITypeText:
+        _actr_ui_text_dispose(control);
+        break;
+    }
+    actr_hash_table_delete(_actr_ui_state->controls, identity);
+}
 void actr_ui_key_down_text(struct ActrUIControlText *text, int key)
 {
     uibutton(key);
@@ -186,7 +212,7 @@ int actr_ui_key_down(int key)
     {
         return focus;
     }
-    control = (struct ActrUIControl *)_actr_ui_state->controls->head[focus - 1];
+    control = (struct ActrUIControl *)actr_hash_table_find(_actr_ui_state->controls, focus);
     switch (control->type)
     {
     case ActrUITypeButton:
@@ -235,7 +261,7 @@ void _actr_ui_set_focus(int identity)
         return;
     }
     _actr_ui_state->focus = identity;
-    struct ActrUIControl *control = (struct ActrUIControl *)_actr_ui_state->controls->head[identity - 1];
+    struct ActrUIControl *control = (struct ActrUIControl *)actr_hash_table_find(_actr_ui_state->controls, identity);
     if (control->type == ActrUITypeText)
     {
         struct ActrUIControlText *text = (struct ActrUIControlText *)control;
@@ -260,7 +286,29 @@ int actr_ui_tap(int x, int y)
     _actr_ui_set_focus(identity);
     return identity;
 }
-
+void free_zero_leaf();
+void free_zero_label();
+void free_zero_button();
+void _actr_ui_button_dispose(struct ActrUIControlButton *button)
+{
+    if (!button->leaf)
+    {
+        free_zero_leaf();
+    }
+    actr_free(button->leaf);
+    
+    if (!button->label)
+    {
+        free_zero_label();
+    }
+    actr_free(button->label);
+        
+    if (!button)
+    {
+        free_zero_button();
+    }
+    actr_free(button);
+}
 struct ActrUIControlButton *actr_ui_button(int x, int y, int w, int h, char *label)
 {
     struct ActrUIControlButton *button = actr_malloc(sizeof(struct ActrUIControlButton));
@@ -268,13 +316,19 @@ struct ActrUIControlButton *actr_ui_button(int x, int y, int w, int h, char *lab
     button->type = ActrUITypeButton;
     button->identity = _actr_ui_state->sequence++;
     button->leaf = actr_quad_tree_leaf(x, y, w, h, button);
-    button->label = label;
+    button->label = actr_heap_string(label);
 
     actr_quad_tree_insert(_actr_ui_state->tree, button->leaf);
-    actr_vector_add(_actr_ui_state->controls, button);
+    actr_hash_table_insert(_actr_ui_state->controls, button->identity, button);
     return button;
 }
 
+void _actr_ui_text_dispose(struct ActrUIControlText *text)
+{
+    actr_free(text->leaf);
+    actr_free(text->value);
+    actr_free(text);
+}
 struct ActrUIControlText *actr_ui_text(int x, int y, int w, int h, char *value)
 {
     struct ActrUIControlText *text = actr_malloc(sizeof(struct ActrUIControlText));
@@ -282,10 +336,10 @@ struct ActrUIControlText *actr_ui_text(int x, int y, int w, int h, char *value)
     text->type = ActrUITypeText;
     text->identity = _actr_ui_state->sequence++;
     text->leaf = actr_quad_tree_leaf(x, y, w, h, text);
-    text->value = value;
+    text->value = actr_heap_string(value);
 
     actr_quad_tree_insert(_actr_ui_state->tree, text->leaf);
-    actr_vector_add(_actr_ui_state->controls, text);
+    actr_hash_table_insert(_actr_ui_state->controls, text->identity ,text);
     return text;
 }
 
@@ -332,9 +386,12 @@ void _actr_ui_draw_text(struct ActrUIControlText *text)
 {
     struct ActrPoint *position;
     struct ActrSize *size = &text->leaf->bounds.size;
-    if (text->container) {
+    if (text->container)
+    {
         position = _actr_ui_get_control_position(text);
-    } else {
+    }
+    else
+    {
         position = &text->leaf->bounds.point;
     }
     int hovered = _actr_ui_state->hover == text->identity;
@@ -385,7 +442,8 @@ void _actr_ui_draw_text(struct ActrUIControlText *text)
         actr_canvas2d_stroke();
     }
 
-    if (text->container) {
+    if (text->container)
+    {
         actr_free(position);
     }
 }
@@ -475,10 +533,13 @@ void actr_ui_draw(double delta)
     char *mem = actr_memory_report();
     actr_canvas2d_measure_text(mem);
     actr_canvas2d_fill_style(0, 0, 0, 100);
-    actr_canvas2d_fill_rect(0, 0, actrState->textSize.x + 1, actrState->textSize.y + 3);
+
+    actr_canvas2d_fill_rect(0, 0, actrState->textSize.x + 2, actrState->textSize.y + 3);
     actr_canvas2d_fill_style(255, 255, 255, 100);
-    actr_canvas2d_fill_text(0, actrState->textSize.y, mem);
+    actr_canvas2d_fill_text(1, actrState->textSize.y, mem);
     actr_free(mem);
+
+    actr_quad_tree_draw(_actr_ui_state->tree);
 }
 
 #endif
