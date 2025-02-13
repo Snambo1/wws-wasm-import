@@ -78,7 +78,6 @@ void actr_ui_init()
     _actr_ui_state->focus = 0;
     _actr_ui_state->hover = 0;
 }
-extern void uibutton(int key);
 
 struct ActrUIControl *actr_ui_get_control(int identity)
 {
@@ -104,7 +103,6 @@ void actr_ui_remove_control(int identity)
 }
 void actr_ui_key_down_text(struct ActrUIControlText *text, int key)
 {
-    uibutton(key);
     int newLength;
     char *newValue;
     int currentLength = strlen(text->value);
@@ -290,27 +288,10 @@ int actr_ui_tap(int x, int y)
     _actr_ui_set_focus(identity);
     return identity;
 }
-void free_zero_leaf();
-void free_zero_label();
-void free_zero_button();
 void _actr_ui_button_dispose(struct ActrUIControlButton *button)
 {
-    if (!button->leaf)
-    {
-        free_zero_leaf();
-    }
     actr_free(button->leaf);
-
-    if (!button->label)
-    {
-        free_zero_label();
-    }
     actr_free(button->label);
-
-    if (!button)
-    {
-        free_zero_button();
-    }
     actr_free(button);
 }
 struct ActrUIControlButton *actr_ui_button(int x, int y, int w, int h, char *label)

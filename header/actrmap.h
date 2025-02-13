@@ -3,6 +3,8 @@
 #define ACTRMAP_H
 #include "actrwasm.h"
 
+// this is all depreciated needs to be removed in favor of the actrjson.h
+
 void actr_map_delete(int map);
 
 long long _actr_map_get_int_length(int mapId, char *name, int nameLength);

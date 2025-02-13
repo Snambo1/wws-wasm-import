@@ -277,10 +277,6 @@ void actr_quad_tree_query(struct ActrQuadTree *root, struct ActrQuadTreeBounds *
     actr_vector_free(list);
 }
 
-extern void founditem(int index);
-extern void foundstuck(int index);
-extern void FAIL_FAIL_FAIL_FAIL();
-extern void found_tree_to_remove();
 void _actr_quad_tree_remove_tree(struct ActrQuadTree *child) {
     struct ActrQuadTree *parent = child->parent;
     if (!parent) {
@@ -327,10 +323,6 @@ void actr_quad_tree_remove(struct ActrQuadTreeLeaf *leaf)
         {
             actr_vector_remove(tree->stuck, index);
         }
-        else
-        {
-            FAIL_FAIL_FAIL_FAIL();
-        }
     }
 
     if (tree->items->count > 0)
@@ -352,7 +344,6 @@ void actr_quad_tree_remove(struct ActrQuadTreeLeaf *leaf)
     
 }
 
-extern void dbgstack(int *address);
 void actr_quad_tree_insert(struct ActrQuadTree *tree, struct ActrQuadTreeLeaf *newLeaf)
 {
     int test = 0;
