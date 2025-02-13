@@ -300,8 +300,32 @@ void _actr_ui_draw_text(struct ActrUIControlText *text)
 
     actr_canvas2d_fill_rect(bounds->x, bounds->y, bounds->w, bounds->h);
 
-    actr_canvas2d_fill_style(0, 0, 0, 100);
-    actr_canvas2d_fill_text(bounds->x + 5, bounds->y + bounds->h - 5, text->value);
+    actr_canvas2d_fill_style(0, 0, 255, 100);
+    int charWidth = 9;
+    int padLeft = 5;
+    int maxChars = (bounds->w - padLeft * 2) / charWidth;
+    int halfChars = maxChars / 2;
+    int charCount = strlen(text->value);
+    int substart = text->cursor - halfChars;
+    if (charCount > maxChars)
+    {
+        if (substart < 0)
+        {
+            substart = 0;
+        }
+        if (substart + maxChars > charCount)
+        {
+            substart -= substart + maxChars - charCount;
+        }
+        char *display = substr(text->value, substart, maxChars);
+        actr_canvas2d_fill_text(bounds->x + padLeft, bounds->y + bounds->h - 5, display);
+        actr_free(display);
+    }
+    else
+    {
+        substart = 0;
+        actr_canvas2d_fill_text(bounds->x + padLeft, bounds->y + bounds->h - 5, text->value);
+    }
 
     int focused = _actr_ui_state->focus == text->identity;
     _actr_ui_set_focus_style(focused);
@@ -311,10 +335,10 @@ void _actr_ui_draw_text(struct ActrUIControlText *text)
     {
         actr_canvas2d_stroke_style(0, 0, 255, 100);
         actr_canvas2d_begin_path();
-        int charWidth = 9;
+
         int cursorStart = bounds->x + 5;
-        actr_canvas_moveto(cursorStart + text->cursor * charWidth, bounds->y + bounds->h - 3);
-        actr_canvas_lineto(cursorStart + (text->cursor + 1) * charWidth, bounds->y + bounds->h - 3);
+        actr_canvas_moveto(cursorStart + (text->cursor - substart) * charWidth, bounds->y + bounds->h - 3);
+        actr_canvas_lineto(cursorStart + (text->cursor + 1 - substart) * charWidth, bounds->y + bounds->h - 3);
         actr_canvas2d_stroke();
     }
 }
