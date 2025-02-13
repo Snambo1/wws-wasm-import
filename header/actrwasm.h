@@ -52,6 +52,18 @@ unsigned long strlen(const char * string) {
     }
     return result;
 }
+
+char *substr(char * text, int start, int length) {
+    if (length == 0) {
+        length = strlen(text) - start;
+    }
+    char * newText = actr_malloc(length + 1);
+
+    for (int i = 0; i < length; i++) {
+        newText[i] = text[start + i]; 
+    }
+    return newText;
+}
 char *actr_heap_string(char *text)
 {
     int size = strlen(text);
