@@ -32,26 +32,19 @@ void _actr_hash_table_expand(struct ActrHashTable *table)
     struct ActrHashTableEntry **newHead;
     struct ActrHashTableEntry *entry;
     struct ActrHashTableEntry *next;
-
     table->allocated += ACTRHASHTABLE_H_ALLOC_SIZE;
     newHead = actr_malloc(sizeof(void *) * table->allocated);
-
     if (table->head)
     {
         for (int i = 0; i < table->count; i++)
         {
             entry = table->head[i];
-
             while (entry)
             {
                 next = entry->next;
-
                 int index = _actr_hash_table_index(table, entry->id);
-
                 entry->next = newHead[index];
-                
                 newHead[index] = entry;
-
                 entry = next;
             }
         }
@@ -60,7 +53,7 @@ void _actr_hash_table_expand(struct ActrHashTable *table)
     table->head = newHead;
 }
 
-int actr_hash_table_insert(struct ActrHashTable *table, int id, void *item)
+void actr_hash_table_insert(struct ActrHashTable *table, int id, void *item)
 {
     if (table->allocated == table->count)
     {

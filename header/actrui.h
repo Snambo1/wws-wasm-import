@@ -92,10 +92,12 @@ void actr_ui_remove_control(int identity)
     switch (control->type)
     {
     case ActrUITypeButton:
-        _actr_ui_button_dispose(control);
+        _actr_ui_button_dispose((struct ActrUIControlButton *)control);
         break;
     case ActrUITypeText:
-        _actr_ui_text_dispose(control);
+        _actr_ui_text_dispose((struct ActrUIControlText *)control);
+        break;
+    case ActrUITypeContainer:
         break;
     }
     actr_hash_table_delete(_actr_ui_state->controls, identity);
@@ -220,6 +222,8 @@ int actr_ui_key_down(int key)
     case ActrUITypeText:
         actr_ui_key_down_text((struct ActrUIControlText *)control, key);
         break;
+    case ActrUITypeContainer:
+        break;
     }
     return focus;
 }
@@ -296,13 +300,13 @@ void _actr_ui_button_dispose(struct ActrUIControlButton *button)
         free_zero_leaf();
     }
     actr_free(button->leaf);
-    
+
     if (!button->label)
     {
         free_zero_label();
     }
     actr_free(button->label);
-        
+
     if (!button)
     {
         free_zero_button();
@@ -339,7 +343,7 @@ struct ActrUIControlText *actr_ui_text(int x, int y, int w, int h, char *value)
     text->value = actr_heap_string(value);
 
     actr_quad_tree_insert(_actr_ui_state->tree, text->leaf);
-    actr_hash_table_insert(_actr_ui_state->controls, text->identity ,text);
+    actr_hash_table_insert(_actr_ui_state->controls, text->identity, text);
     return text;
 }
 
@@ -372,13 +376,13 @@ struct ActrPoint *_actr_ui_get_control_position(struct ActrUIControl *control)
     result->x = control->leaf->bounds.point.x;
     result->y = control->leaf->bounds.point.y;
 
-    control = control->container;
+    control = (struct ActrUIControl *)control->container;
 
     while (control)
     {
         result->x += control->leaf->bounds.point.x;
         result->y += control->leaf->bounds.point.y;
-        control = control->container;
+        control = (struct ActrUIControl *)control->container;
     }
     return result;
 }
@@ -388,7 +392,7 @@ void _actr_ui_draw_text(struct ActrUIControlText *text)
     struct ActrSize *size = &text->leaf->bounds.size;
     if (text->container)
     {
-        position = _actr_ui_get_control_position(text);
+        position = _actr_ui_get_control_position((struct ActrUIControl *)text);
     }
     else
     {
@@ -523,6 +527,8 @@ void actr_ui_draw(double delta)
             break;
         case ActrUITypeText:
             _actr_ui_draw_text(_actr_ui_state->results->head[i]);
+            break;
+        case ActrUITypeContainer:
             break;
         }
     }
