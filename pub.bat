@@ -53,7 +53,15 @@ if "%script%" == "fetch-text.c" (
   ) else (
     SET apiKey=0
   )
+) else if "%script%" == "spray-paint.c" (
+  if "%local%" == "local" (
+    SET apiKey=gtqv62h7kloh158d2gx1zs8uon4t8vaikmjnw9f81p22qne6or
+  ) else (
+    SET apiKey=0
+  )
 )
+
+
 
 
 if "%script%" == "myScript" (

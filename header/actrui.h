@@ -29,6 +29,8 @@ struct ActrUIControl
     struct ActrQuadTreeLeaf *leaf;
     int hidden;
     struct ActrUIControlContainer *container;
+    unsigned int foregroundColor;
+    unsigned int backgroundColor;
 };
 struct ActrUIControlButton
 {
@@ -38,6 +40,8 @@ struct ActrUIControlButton
     struct ActrQuadTreeLeaf *leaf;
     int hidden;
     struct ActrUIControlContainer *container;
+    unsigned int foregroundColor;
+    unsigned int backgroundColor;
     // unique
     char *label;
 };
@@ -49,6 +53,8 @@ struct ActrUIControlText
     struct ActrQuadTreeLeaf *leaf;
     int hidden;
     struct ActrUIControlContainer *container;
+    unsigned int foregroundColor;
+    unsigned int backgroundColor;
     // unique
     char *value;
     int cursor;
@@ -61,6 +67,8 @@ struct ActrUIControlContainer
     struct ActrQuadTreeLeaf *leaf;
     int hidden;
     struct ActrUIControlContainer *container;
+    unsigned int foregroundColor;
+    unsigned int backgroundColor;
 };
 
 void _actr_ui_button_dispose(struct ActrUIControlButton *button);
@@ -84,6 +92,11 @@ struct ActrUIControl *actr_ui_get_control(int identity)
     return actr_hash_table_find(_actr_ui_state->controls, identity);
 }
 
+void _actr_ui_container_dispose(struct ActrUIControlContainer *container)
+{
+    actr_free(container);
+}
+
 void actr_ui_remove_control(int identity)
 {
     struct ActrUIControl *control = actr_ui_get_control(identity);
@@ -97,6 +110,7 @@ void actr_ui_remove_control(int identity)
         _actr_ui_text_dispose((struct ActrUIControlText *)control);
         break;
     case ActrUITypeContainer:
+        _actr_ui_container_dispose((struct ActrUIControlContainer *)control);
         break;
     }
     actr_hash_table_delete(_actr_ui_state->controls, identity);
@@ -308,6 +322,20 @@ struct ActrUIControlButton *actr_ui_button(int x, int y, int w, int h, char *lab
     return button;
 }
 
+struct ActrUIControlContainer *actr_ui_container(int x, int y, int w, int h, unsigned int foregroundColor, unsigned int backgroundColor)
+{
+    struct ActrUIControlContainer *container = actr_malloc(sizeof(struct ActrUIControlContainer));
+    container->type = ActrUITypeContainer;
+    container->identity = _actr_ui_state->sequence++;
+    container->leaf = actr_quad_tree_leaf(x, y, w, h, container);
+    container->foregroundColor = foregroundColor;
+    container->backgroundColor = backgroundColor;
+    
+    actr_quad_tree_insert(_actr_ui_state->tree, container->leaf);
+    actr_hash_table_insert(_actr_ui_state->controls, container->identity, container);
+    return container;
+}
+
 void _actr_ui_text_dispose(struct ActrUIControlText *text)
 {
     actr_free(text->leaf);
@@ -432,7 +460,13 @@ void _actr_ui_draw_text(struct ActrUIControlText *text)
         actr_free(position);
     }
 }
-
+void _actr_ui_draw_container(struct ActrUIControlContainer *container)
+{
+    unsigned char r, g, b, a;
+    actr_unpack_bytes(container->foregroundColor, &r, &g, &b, &a);
+    actr_canvas2d_stroke_style(r, g, b, a);
+    actr_canvas2d_stroke_rect(container->leaf->bounds.point.x, container->leaf->bounds.point.y, container->leaf->bounds.size.w, container->leaf->bounds.size.h);
+}
 void _actr_ui_draw_button(struct ActrUIControlButton *button)
 {
     struct ActrQuadTreeBounds *bounds = &button->leaf->bounds;
@@ -499,7 +533,6 @@ void actr_ui_draw(double delta)
         if (hidden)
         {
             continue;
-            ;
         }
         switch (control->type)
         {
@@ -510,6 +543,7 @@ void actr_ui_draw(double delta)
             _actr_ui_draw_text(_actr_ui_state->results->head[i]);
             break;
         case ActrUITypeContainer:
+            _actr_ui_draw_container(_actr_ui_state->results->head[i]);
             break;
         }
     }
@@ -526,7 +560,7 @@ void actr_ui_draw(double delta)
     actr_canvas2d_fill_text(1, actrState->textSize.y, mem);
     actr_free(mem);
 
-    actr_quad_tree_draw(_actr_ui_state->tree);
+    // actr_quad_tree_draw(_actr_ui_state->tree);
 }
 
 #endif

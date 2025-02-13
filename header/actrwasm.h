@@ -34,6 +34,17 @@ struct ActrState
 
 struct ActrState * actrState;
 
+unsigned int actr_pack_bytes(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
+{
+    return (r << 24) | (g << 16) | (b << 8) | a;
+}
+void actr_unpack_bytes(unsigned int value, unsigned char *r, unsigned char *g, unsigned char *b, unsigned char *a)
+{
+    *r = (value >> 24) & 0xFF;
+    *g = (value >> 16) & 0xFF;
+    *b = (value >> 8) & 0xFF;
+    *a = value & 0xFF;
+}
 /// @brief internal use
 [[clang::export_name("_actr_sanity")]]
 void _actr_sanity()
