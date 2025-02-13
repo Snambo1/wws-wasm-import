@@ -296,14 +296,17 @@ void _actr_ui_set_hover_style(int hovered)
 void _actr_ui_draw_text(struct ActrUIControlText *text)
 {
     struct ActrQuadTreeBounds *bounds = &text->leaf->bounds;
-    _actr_ui_set_hover_style(_actr_ui_state->hover == text->identity);
+    int hovered = _actr_ui_state->hover == text->identity;
+    int focused = _actr_ui_state->focus == text->identity;
+
+    _actr_ui_set_hover_style(hovered && !focused);
 
     actr_canvas2d_fill_rect(bounds->x, bounds->y, bounds->w, bounds->h);
 
     actr_canvas2d_fill_style(0, 0, 255, 100);
     int charWidth = 9;
-    int padLeft = 5;
-    int maxChars = (bounds->w - padLeft * 2) / charWidth;
+    int padSide = 5;
+    int maxChars = (bounds->w - padSide * 2) / charWidth;
     int halfChars = maxChars / 2;
     int charCount = strlen(text->value);
     int substart = text->cursor - halfChars;
@@ -318,16 +321,15 @@ void _actr_ui_draw_text(struct ActrUIControlText *text)
             substart -= substart + maxChars - charCount;
         }
         char *display = substr(text->value, substart, maxChars);
-        actr_canvas2d_fill_text(bounds->x + padLeft, bounds->y + bounds->h - 5, display);
+        actr_canvas2d_fill_text(bounds->x + padSide, bounds->y + bounds->h - 5, display);
         actr_free(display);
     }
     else
     {
         substart = 0;
-        actr_canvas2d_fill_text(bounds->x + padLeft, bounds->y + bounds->h - 5, text->value);
+        actr_canvas2d_fill_text(bounds->x + padSide, bounds->y + bounds->h - 5, text->value);
     }
 
-    int focused = _actr_ui_state->focus == text->identity;
     _actr_ui_set_focus_style(focused);
     actr_canvas2d_stroke_rect(bounds->x, bounds->y, bounds->w, bounds->h);
 
@@ -347,14 +349,30 @@ void _actr_ui_draw_button(struct ActrUIControlButton *button)
 {
     struct ActrQuadTreeBounds *bounds = &button->leaf->bounds;
 
-    _actr_ui_set_hover_style(_actr_ui_state->hover == button->identity);
+    int focused = _actr_ui_state->focus == button->identity;
+    int hovered = _actr_ui_state->hover == button->identity;
+    _actr_ui_set_hover_style(hovered && !focused);
 
     actr_canvas2d_fill_rect(bounds->x, bounds->y, bounds->w, bounds->h);
 
     actr_canvas2d_fill_style(0, 0, 0, 100);
-    actr_canvas2d_fill_text(bounds->x + 5, bounds->y + bounds->h - 5, button->label);
+    int charWidth = 9;
+    int padSide = 5;
+    int maxChars = (bounds->w - padSide * 2) / charWidth;
+    int charCount = strlen(button->label);
 
-    if (_actr_ui_state->focus == button->identity)
+    if (charCount > maxChars)
+    {
+        char *label = substr(button->label, 0, maxChars);
+        actr_canvas2d_fill_text(bounds->x + padSide, bounds->y + bounds->h - 5, label);
+        actr_free(label);
+    }
+    else
+    {
+        actr_canvas2d_fill_text(bounds->x + padSide, bounds->y + bounds->h - 5, button->label);
+    }
+
+    if (focused)
     {
         actr_canvas2d_stroke_style(200, 250, 200, 100);
     }
