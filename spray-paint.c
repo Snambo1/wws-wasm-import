@@ -151,8 +151,11 @@ void actr_pointer_move(int x, int y)
                 pix.size = bounds.size;
                 // pix->color = actr_prng() * 0xffffffff;
                 pix.color = state->color;
+                unsigned char r,g,b,a;
+                actr_unpack_bytes(state->color, &r, &g, &b, &a);
+                
 
-                actr_ui_container(pix.point.x, pix.point.y, pix.size.w, pix.size.h, state->color, state->color);
+                actr_ui_container(pix.point.x, pix.point.y, pix.size.w, pix.size.h, state->color, actr_pack_bytes(r,g,b,10));
             }
         } else {
             if (state->delete) {

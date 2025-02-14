@@ -1,7 +1,8 @@
 #ifndef ACTRMERGESORT_H
 #define ACTRMERGESORT_H
 #include "actrvector.h"
-function _actr_merge_sort_merge(struct ActrVector *left, struct ActrVector *right, struct ActrVector *updates)
+
+struct ActrVector * _actr_merge_sort_merge(struct ActrVector *left, struct ActrVector *right, struct ActrVector *updates)
 {
     struct ActrVector *result = actr_vector_init(8, 8);
     int i = 0;
@@ -10,32 +11,32 @@ function _actr_merge_sort_merge(struct ActrVector *left, struct ActrVector *righ
     while (i < left->count && j < right->count)
     {
 
-        if (left->head[i] < right->head[j])
+        if ((int)left->head[i] < (int)right->head[j])
         {
             actr_vector_add(result, left->head[i++]);
         }
         else
         {
-            actr_vector_add(result, right->head[i++]);
+            actr_vector_add(result, right->head[j++]);
         }
     }
 
-    struct ActrVector *tempLeft = actr_vector_slice(left, i);
+    struct ActrVector *tempLeft = actr_vector_slice(left, i, 0);
     actr_vector_free(left);
 
-    struct ActrVector *tempRight = actr_vector_slice(right, j);    
+    struct ActrVector *tempRight = actr_vector_slice(right, j, 0);    
     actr_vector_free(right);
 
     struct ActrVector *tempResult = actr_vector_concat(result, tempLeft);
     actr_free(result);
     actr_free(tempLeft);
 
-    struct ActrVector *result = actr_vector_concat(tempResult, tempRight);
+    result = actr_vector_concat(tempResult, tempRight);
     actr_free(tempResult);
     actr_free(tempRight);
 
     if (updates) {
-        actr_vector_add(update, actr_vector_slice(result, 0, 0));
+        actr_vector_add(updates, actr_vector_slice(result, 0, 0));
     }
 
     return result;
@@ -55,11 +56,13 @@ struct ActrVector *actr_merge_sort(struct ActrVector *arr, struct ActrVector *up
         return result;
     }
 
-    middle = Math.floor(len / 2);
+    middle = (len / 2);
 
-    left = actr_vector_slice(arr, 0, middle);  // left side, from 0 to the middle
-    right = actr_vector_slice(arr, middle, 0); // right side, from the middle to the end
 
-    return actr_merge_sort(actr_merge_sort(left), actr_merge_sort(right), updates);
+    return _actr_merge_sort_merge(
+        actr_merge_sort(actr_vector_slice(arr, 0, middle), updates), 
+        actr_merge_sort(actr_vector_slice(arr, middle, 0), updates),
+        updates
+    );
 }
 #endif

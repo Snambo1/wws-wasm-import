@@ -59,7 +59,14 @@ if "%script%" == "fetch-text.c" (
   ) else (
     SET apiKey=0
   )
+) else if "%script%" == "merge-sort.c" (
+  if "%local%" == "local" (
+    SET apiKey=4bg5d9fb2xlg9sdv4fp0is1e5plv8je5p9p36yyzciwrwudepg
+  ) else (
+    SET apiKey=0
+  )
 )
+
 
 
 
