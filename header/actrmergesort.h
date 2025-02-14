@@ -30,11 +30,15 @@ function _actr_merge_sort_merge(struct ActrVector *left, struct ActrVector *righ
     actr_free(result);
     actr_free(tempLeft);
 
+    struct ActrVector *result = actr_vector_concat(tempResult, tempRight);
+    actr_free(tempResult);
+    actr_free(tempRight);
+
     if (updates) {
-        actr_vector_add(update, actr_vector_slice(tempResult, 0, 0));
+        actr_vector_add(update, actr_vector_slice(result, 0, 0));
     }
 
-    return tempResult;
+    return result;
 }
 struct ActrVector *actr_merge_sort(struct ActrVector *arr, struct ActrVector *updates)
 {
