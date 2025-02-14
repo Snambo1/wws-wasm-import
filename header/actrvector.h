@@ -30,8 +30,10 @@ struct ActrVector *actr_vector_init(int initialSize, int incrementSize)
 }
 int actr_vector_find(struct ActrVector *list, void *item)
 {
-    for (int i = 0; i < list->count; i++) {
-        if (list->head[i] == item) {
+    for (int i = 0; i < list->count; i++)
+    {
+        if (list->head[i] == item)
+        {
             return i;
         }
     }
@@ -56,7 +58,7 @@ int actr_vector_add(struct ActrVector *list, void *item)
         }
         list->allocated += list->increment;
         void **newHead = actr_malloc(sizeof(void *) * list->allocated);
-        
+
         for (int i = 0; i < list->count; i++)
         {
             newHead[i] = list->head[i];
@@ -71,14 +73,39 @@ int actr_vector_add(struct ActrVector *list, void *item)
 }
 void actr_vector_remove(struct ActrVector *list, int index)
 {
-    if (list->count > 0 )
+    if (list->count > 0)
     {
         list->head[index] = list->head[list->count - 1];
     }
     list->count--;
 }
-void actr_vector_free(struct ActrVector *list) {
+void actr_vector_free(struct ActrVector *list)
+{
     actr_free(list->head);
     actr_free(list);
 }
+struct ActrVector *actr_vector_slice(struct ActrVector *source, int start, int end)
+{
+    if (end == 0) {
+        end = source->count;
+    }
+    struct ActrVector *result = actr_vector_init(8, 8);
+    for (int i = start; i < end; i++) {
+        actr_vector_add(result, source->head[i]);
+    }
+    return result;
+}
+
+struct ActrVector *actr_vector_concat(struct ActrVector *first, struct ActrVector *second)
+{
+    struct ActrVector *result = actr_vector_init(8, 8);
+    for (int i = 0; i < first->count; i++) {
+        actr_vector_add(result, first->head[i]);
+    }
+    for (int i = 0; i < second->count; i++) {
+        actr_vector_add(result, second->head[i]);
+    }
+    return result;
+}
+
 #endif
