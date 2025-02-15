@@ -21,9 +21,8 @@ enum MyState
 struct MyData
 {
     int asyncHandle;
-    char *text;
     int state;
-    struct ActrUIButton *button;
+    struct ActrUIControlButton *button;
     int failCount;
 };
 
@@ -31,7 +30,8 @@ struct MyData *data;
 
 void reformatButton()
 {
-    actr_free(data->button->text);
+    return;
+    actr_free(data->button->label);
     int tapCount = 0;
     if (actr_authenticated())
     {
@@ -39,25 +39,28 @@ void reformatButton()
     }
     struct ActrFormatState *format = actr_format("Click Count: %s");
     actr_format_int(format, tapCount);
-    data->button->text = actr_format_close(format);
+    data->button->label = actr_format_close(format);
 }
 [[clang::export_name("actr_key_down")]]
 void actr_key_down(char key)
 {
+    return;
+    actr_log("key down");
     actr_ui_key_down(key);
-}
 
+}
 [[clang::export_name("actr_init")]]
 void actr_init()
 {
     actr_ui_init();
+    return;
     data = actr_malloc(sizeof(struct MyData));
     data->state = MyStateLoadingMap;
-    data->text = "loading...";
-    data->button = actr_ui_button(20, 20, 200, 50, actr_heap_string("loading..."));
+    data->button = actr_ui_button(20, 20, 200, 50, "loading...");
 
     if (actr_authenticated())
     {
+        actr_log("loading  map");
         data->asyncHandle = actr_json_load(MAP_MAIN);
     }
     else
@@ -66,11 +69,12 @@ void actr_init()
     }
 }
 
-[[clang::export_name("actr_tap")]]
-void actr_tap(int x, int y)
+[[clang::export_name("actr_pointer_tap")]]
+void actr_pointer_tap(int x, int y)
 {
-    int identity = actr_ui_tap(x, y);
-    if (identity == data->button->identity)
+    return;
+    struct ActrUIControlButton * button = (struct ActrUIControlButton *)actr_ui_tap(x, y);
+    if (button == data->button)
     {
         if (actr_authenticated())
         {
@@ -83,17 +87,20 @@ void actr_tap(int x, int y)
     }
 }
 
-[[clang::export_name("actr_move")]]
-void actr_move(int x, int y)
+[[clang::export_name("actr_pointer_move")]]
+void actr_pointer_move(int x, int y)
 {
+    return;
     actr_ui_move(x, y);
 }
 
 [[clang::export_name("actr_async_result")]]
 void actr_async_result(int handle, enum AsyncResult success)
 {
+    return;
     if (handle == data->asyncHandle)
     {
+        actr_log("actr_async_result match handle");
         switch (success)
         {
         case AsyncResultSuccess:
@@ -119,6 +126,8 @@ void actr_async_result(int handle, enum AsyncResult success)
 void actr_step(double delta)
 {
     actr_ui_draw(delta);
+    return;
+    actr_canvas2d_fill_style(255,255,255,100);
     if (actr_authenticated())
     {
         actr_canvas2d_fill_text(20, 90, "User is authenticated. Persistence enabled.");
