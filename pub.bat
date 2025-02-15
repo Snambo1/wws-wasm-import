@@ -115,7 +115,7 @@ if %ERRORLEVEL% == 0 (
 if %ERRORLEVEL% == 0 (
   echo.
   echo %script%.wasm uploaded to %server%
-  rem rm %script%.wasm
+  rm %script%.wasm
 ) else (
   echo %script%.wasm upload failed
 )

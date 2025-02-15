@@ -199,12 +199,12 @@ void actr_quad_tree_draw(struct ActrQuadTree *tree)
     {
         tree = trees->head[0];
 
-        actr_canvas2d_stroke_style(0, 255, 0, 50);
+        actr_canvas2d_stroke_style(0, 255, 0, 10);
         _actr_quad_tree_draw_bounds(&tree->bounds);
 
         if (tree->items)
         {
-            actr_canvas2d_stroke_style(0, 255, 255, 50);
+            actr_canvas2d_stroke_style(0, 255, 255, 10);
             for (int i = 0; i < tree->items->count; i++)
             {
                 leaf = (struct ActrQuadTreeLeaf *)(tree->items->head[i]);
@@ -214,7 +214,7 @@ void actr_quad_tree_draw(struct ActrQuadTree *tree)
 
         if (tree->stuck)
         {
-            actr_canvas2d_stroke_style(200, 200, 200, 50);
+            actr_canvas2d_stroke_style(200, 200, 200, 10);
             for (int i = 0; i < tree->stuck->count; i++)
             {
                 leaf = (struct ActrQuadTreeLeaf *)(tree->stuck->head[i]);

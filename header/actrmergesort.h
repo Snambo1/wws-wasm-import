@@ -2,6 +2,8 @@
 #define ACTRMERGESORT_H
 #include "actrvector.h"
 
+// this is probably leaking memory prefer functions in actrmergesortmutate.h
+
 struct ActrVector * _actr_merge_sort_merge(struct ActrVector *left, struct ActrVector *right, struct ActrVector *updates)
 {
     struct ActrVector *result = actr_vector_init(8, 8);

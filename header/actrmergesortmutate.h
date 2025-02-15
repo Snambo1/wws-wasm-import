@@ -2,9 +2,12 @@
 #define ACTRMERGESORTMUTATE_H
 #include "actrvector.h"
 
+int _actr_merge_sort_mutate_comparator(void * a, void * b)
+{
+    return (int)a > (int)b;
+}
 
-
-void _actr_merge_sort_mutate_merge(struct ActrVector *arr, int start, int mid, int end)
+void _actr_merge_sort_mutate_merge(struct ActrVector *arr, int start, int mid, int end, int (*comparator)(void*, void*))
 {
     int leftIndex = start;
     int rightIndex = mid + 1;
@@ -13,7 +16,7 @@ void _actr_merge_sort_mutate_merge(struct ActrVector *arr, int start, int mid, i
 
     while (leftIndex <= mid && rightIndex <= end)
     {
-        if (arr->head[leftIndex] <= arr->head[rightIndex])
+        if (comparator(arr->head[leftIndex], arr->head[rightIndex]))
         {
             actr_vector_add(tempArray, arr->head[leftIndex++]);
         }
@@ -40,17 +43,20 @@ void _actr_merge_sort_mutate_merge(struct ActrVector *arr, int start, int mid, i
     }
     actr_vector_free(tempArray);
 }
-void actr_merge_sort_mutate(struct ActrVector * arr, int start, int end, struct ActrVector * updates)
+void actr_merge_sort_mutate(struct ActrVector * arr, int start, int end, int (*comparator)(void*, void*), struct ActrVector * updates)
 {
     if (start < end)
     {
+        if (comparator == 0) {
+            comparator = _actr_merge_sort_mutate_comparator;
+        }
         int mid = (start + end) / 2;
         if (updates) {
             actr_vector_add(updates, actr_vector_slice(arr, 0, 0));
         }
-        actr_merge_sort_mutate(arr, start, mid, updates);
-        actr_merge_sort_mutate(arr, mid + 1, end, updates);
-        _actr_merge_sort_mutate_merge(arr, start, mid, end);
+        actr_merge_sort_mutate(arr, start, mid, comparator, updates);
+        actr_merge_sort_mutate(arr, mid + 1, end, comparator, updates);
+        _actr_merge_sort_mutate_merge(arr, start, mid, end, comparator);
     }
 }
 
