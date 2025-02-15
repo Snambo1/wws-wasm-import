@@ -1,10 +1,8 @@
-
-
 #include "actrformat.h"
 #include "actrtime.h"
 #include "actrui.h"
 #include "actrprng.h"
-#define PANEL_WIDTH 55
+#define PANEL_WIDTH 60
 
 struct MyState
 {
@@ -30,7 +28,6 @@ struct MyState
 
 struct MyState *state;
 
-void addr(void *a);
 void generateUI()
 {
     struct ActrUIControlButton *button;
@@ -169,12 +166,14 @@ void actr_pointer_tap(int x, int y)
     if ((struct ActrUIControlButton *)tapped == state->colorRevert)
     {
         state->changeButton->control.backgroundColor = state->revertColor;
+        state->color = state->revertColor;
         removeColorPicker();
         return;
     }
     if ((struct ActrUIControlButton *)tapped == state->colorAccept)
     {
         state->changeButton->control.backgroundColor = state->colorSample->control.backgroundColor;
+        state->color = state->colorSample->control.backgroundColor;
         removeColorPicker();
         return;
     } 

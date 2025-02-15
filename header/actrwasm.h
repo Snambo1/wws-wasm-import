@@ -30,6 +30,7 @@ struct ActrState
     struct ActrPoint pointerPosition;
     // text size will be updated when actr_canvas2d_measureText is called
     struct ActrPoint textSize;
+    int debug;
 };
 
 struct ActrState * actrState;
@@ -75,13 +76,17 @@ char *substr(char * text, int start, int length) {
     }
     return newText;
 }
-char *actr_heap_string(char *text)
+void actr_heap_string(char ** target, char *text)
 {
+    if (*target != 0)
+    {
+        actr_free(*target);
+    }
     int size = strlen(text);
     char *result = actr_malloc(size + 1);
     for (int i = 0; i < size; i++) {
         result[i] = text[i];
     }
-    return result;
+    *target = result;
 }
 #endif

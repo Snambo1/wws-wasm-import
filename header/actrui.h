@@ -5,6 +5,7 @@
 #include "actrcanvas.h"
 #include "actrhashtable.h"
 #include "actrmergesortmutate.h"
+#include "actrlog.h"
 
 enum ActrUIType
 {
@@ -347,10 +348,10 @@ struct ActrUIControlButton *actr_ui_button(int x, int y, int w, int h, char *lab
     button->control.type = ActrUITypeButton;
     button->control.identity = actr_ui_state->sequence++;
     button->control.leaf = actr_quad_tree_leaf(x, y, w, h, button);
-    button->label = actr_heap_string(label);
-    button->control.foregroundColor = actr_pack_bytes(255, 255, 255, 100);
+    actr_heap_string(&button->label, label);
+    button->control.foregroundColor = actr_pack_bytes(0, 0, 0, 100);
     button->control.backgroundColor = actr_pack_bytes(127, 127, 127, 100);
-
+    button->control.borderColor = actr_pack_bytes(255, 255, 255, 100);
     actr_quad_tree_insert(actr_ui_state->tree, button->control.leaf);
     actr_hash_table_insert(actr_ui_state->controls, button->control.identity, button);
     actr_ui_invalidate();
@@ -392,7 +393,7 @@ struct ActrUIControlText *actr_ui_text(int x, int y, int w, int h, char *value)
     text->control.type = ActrUITypeText;
     text->control.identity = actr_ui_state->sequence++;
     text->control.leaf = actr_quad_tree_leaf(x, y, w, h, text);
-    text->value = actr_heap_string(value);
+    actr_heap_string(&text->value, value);
 
     actr_quad_tree_insert(actr_ui_state->tree, text->control.leaf);
     actr_hash_table_insert(actr_ui_state->controls, text->control.identity, text);
@@ -548,47 +549,44 @@ void _actr_ui_draw_container(struct ActrUIControlContainer *container)
     actr_canvas2d_stroke_style(r, g, b, a);
     actr_canvas2d_stroke_rect(container->control.leaf->bounds.point.x, container->control.leaf->bounds.point.y, container->control.leaf->bounds.size.w, container->control.leaf->bounds.size.h);
 }
+
 void _actr_ui_draw_button(struct ActrUIControlButton *button)
 {
     struct ActrQuadTreeBounds *bounds = &button->control.leaf->bounds;
     unsigned char r, g, b, a;
 
-    int focused = _actr_ui__control_is_focused(button);
-    int hovered = _actr_ui_control_is_hovered(button);
-
+    // int focused = _actr_ui__control_is_focused(button);
+    // int hovered = _actr_ui_control_is_hovered(button);
+    actr_log("draw button");
+    // background
     actr_unpack_bytes(button->control.backgroundColor, &r, &g, &b, &a);
     actr_canvas2d_fill_style(r, g, b, a);
     actr_canvas2d_fill_rect(bounds->point.x, bounds->point.y, bounds->size.w, bounds->size.h);
 
-    actr_unpack_bytes(button->control.foregroundColor, &r, &g, &b, &a);
-    actr_canvas2d_fill_style(r, g, b, a);
-
+    
     int charWidth = 9;
-    int padSide = 5;
+    int padSide = 6;
     int maxChars = (bounds->size.w - padSide * 2) / charWidth;
     int charCount = strlen(button->label);
 
+    // label
+    actr_unpack_bytes(button->control.foregroundColor, &r, &g, &b, &a);
+    actr_canvas2d_fill_style(r, g, b, a);
+    int textLift = 8;
     if (charCount > maxChars)
     {
         char *label = substr(button->label, 0, maxChars);
-        actr_canvas2d_fill_text(bounds->point.x + padSide, bounds->point.y + bounds->size.h - 5, label);
+        actr_canvas2d_fill_text(bounds->point.x + padSide, bounds->point.y + bounds->size.h - textLift, label);
         actr_free(label);
     }
     else
     {
-        actr_canvas2d_fill_text(bounds->point.x + padSide, bounds->point.y + bounds->size.h - 5, button->label);
+        actr_canvas2d_fill_text(bounds->point.x + padSide, bounds->point.y + bounds->size.h - textLift, button->label);
     }
 
-    if (focused)
-    {
-        actr_unpack_bytes(button->control.borderColor, &r, &g, &b, &a);
-        actr_canvas2d_stroke_style(r, g, b, a);
-    }
-    else
-    {
-        actr_unpack_bytes(button->control.borderColor, &r, &g, &b, &a);
-        actr_canvas2d_stroke_style(r, g, b, a);
-    }
+    // border
+    actr_unpack_bytes(button->control.borderColor, &r, &g, &b, &a);
+    actr_canvas2d_stroke_style(r, g, b, a);
     actr_canvas2d_stroke_rect(bounds->point.x, bounds->point.y, bounds->size.w, bounds->size.h);
 }
 void actr_ui_draw(double delta)
@@ -647,6 +645,7 @@ void actr_ui_draw(double delta)
     if (actrState->debug)
     {
         // draw memory report
+        actr_log("drawing memory");
         char *mem = actr_memory_report();
         actr_canvas2d_measure_text(mem);
         actr_canvas2d_fill_style(0, 0, 0, 100);

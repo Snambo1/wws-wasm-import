@@ -6,7 +6,7 @@
 #include "actrprng.h"
 #include "actrmergesortmutate.h"
 
-#define PART_COUNT 120
+#define PART_COUNT 60
 
 struct MyState
 {
@@ -14,7 +14,7 @@ struct MyState
     struct ActrVector *uiParts;
     struct ActrVector *scramble;
     int countDown;
-    int restartHandle;
+    struct ActrUIControlButton * restartHandle;
     int index;
 };
 
@@ -30,7 +30,7 @@ void actr_init()
     state->updates = actr_vector_init(8, 8);
     state->uiParts = actr_vector_init(8, 8);
     state->scramble = actr_vector_init(8, 8);
-    state->restartHandle = actr_ui_button(20, 20, 100, 25, "Restart")->identity;
+    state->restartHandle = actr_ui_button(20, 20, 100, 25, "Restart");
     state->countDown = -1;
     state->index = 0;
 }
@@ -38,7 +38,7 @@ void generateControls()
 {
     for (int i = 0; i < state->uiParts->count; i++)
     {
-        actr_ui_remove_control((int)state->uiParts->head[i]);
+        actr_ui_remove_control(state->uiParts->head[i]);
     }
     state->uiParts->count = 0;
 
@@ -51,21 +51,31 @@ void generateControls()
     for (int i = 0; i < step->count; i++)
     {
         int val = (int)step->head[i];
-        actr_vector_add(state->uiParts, (void *)actr_ui_container(5 + i * (width), actrState->canvasSize.h - val - 5, width - 2, val,  fgcolor, bgcolor)->identity);
+        struct ActrUIControlContainer * container = actr_ui_container(5 + i * (width), actrState->canvasSize.h - val - 5, width - 2, val);
+        container->control.backgroundColor = bgcolor;
+        container->control.foregroundColor = fgcolor;
+        actr_vector_add(state->uiParts, container);
     }
 }
+
+[[clang::export_name("actr_resize")]]
+void actr_resize()
+{
+    actr_ui_invalidate(); // required
+}
+
 [[clang::export_name("actr_pointer_tap")]]
 void actr_pointer_tap(int x, int y)
 {
-    int id = actr_ui_tap(x, y);
-    if (id == state->restartHandle)
+    struct ActrUIControlButton * button = (struct ActrUIControlButton *)actr_ui_tap(x, y);
+    if (button == state->restartHandle)
     {
 
         state->countDown = 1;
         state->index = 0;
         for (int i = 0; i < state->uiParts->count; i++)
         {
-            actr_ui_remove_control((int)state->uiParts->head[i]);
+            actr_ui_remove_control(state->uiParts->head[i]);
         }
         state->uiParts->count = 0;
 
@@ -83,7 +93,7 @@ void actr_pointer_tap(int x, int y)
             actr_vector_add(state->scramble, (void *)val);
         }
         // actr_vector_add(state->updates, actr_vector_slice(state->scramble, 0, 0));
-        actr_merge_sort_mutate(state->scramble, 0, state->scramble->count - 1, state->updates);
+        actr_merge_sort_mutate(state->scramble, 0, state->scramble->count - 1, 0, state->updates);
         actr_vector_add(state->updates, state->scramble);
         generateControls();
     }
