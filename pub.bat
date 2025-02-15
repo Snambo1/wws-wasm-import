@@ -71,6 +71,12 @@ if "%script%" == "fetch-text.c" (
   ) else (
     SET apiKey=0
   )
+) else if "%script%" == "space-game.c" (
+  if "%local%" == "local" (
+    SET apiKey=kojbzjr12ob7v0lp64824dh6wf4eafb4urplpkshskmtdgnpwz
+  ) else (
+    SET apiKey=0
+  )
 )
 
 
@@ -94,9 +100,9 @@ if "%local%" == "local" (
 )
 
 REM echo Building...
-REM -fno-inline -nostdlib -nostdlibinc -nostdinc -nostdinc++
-clang  %script% -fno-inline -I header --target=wasm32-unknown-unknown -Wl,-z,stack-size=65536 ^
---optimize=3 -nostdlib -nostdlibinc -nostdinc -nostdinc++ -fno-builtin ^
+REM -fno-inline -nostdlib -nostdlibinc -nostdinc -nostdinc++  -fno-builtin
+clang %script% -fno-inline -I header --target=wasm32-unknown-unknown -Wl,-z,stack-size=65536 ^
+--optimize=3 -nostdlib -nostdlibinc -nostdinc -nostdinc++  -fno-builtin ^
 -Wl,--no-entry -Wl,--export-all -Wl,--error-limit=0 ^
 -Wl,--allow-undefined --wasm-opt --output %script%.wasm
 

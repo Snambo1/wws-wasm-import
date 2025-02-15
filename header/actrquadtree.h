@@ -18,7 +18,7 @@ struct ActrQuadTreeLeaf
     void *item;
     struct ActrQuadTree *parent;
 };
-struct ActrQuadTreeLeaf *actr_quad_tree_leaf(int x, int y, int w, int h, void *item)
+struct ActrQuadTreeLeaf *actr_quad_tree_leaf(long long x, long long y, long long w, long long h, void *item)
 {
     struct ActrQuadTreeLeaf *leaf = actr_malloc(sizeof(struct ActrQuadTreeLeaf));
     leaf->bounds.point.x = x;
@@ -44,7 +44,7 @@ void _actr_quad_tree_dispose(struct ActrQuadTree *tree) {
     actr_free(tree->branch);
     actr_free(tree);
 }
-struct ActrQuadTree *actr_quad_tree_init(int root, int x, int y, int size, struct ActrQuadTree *parent)
+struct ActrQuadTree *actr_quad_tree_init(int root, long long x, long long y, long long size, struct ActrQuadTree *parent)
 {
     struct ActrQuadTree *result = actr_malloc(sizeof(struct ActrQuadTree));
     result->root = root;
@@ -99,8 +99,8 @@ int _actr_quad_tree_bounds_contains(struct ActrQuadTreeBounds *bounds, struct Ac
 void _actr_quad_tree_grow(struct ActrQuadTree *tree)
 {
     struct ActrQuadTree *new;
-    int size = tree->bounds.size.w;
-    int halfSize = size / 2;
+    long long size = tree->bounds.size.w;
+    long long halfSize = size / 2;
     if (tree->branch[0])
     {
         // 0 1
@@ -151,8 +151,8 @@ int _actr_quad_tree_index(struct ActrQuadTree *tree, struct ActrQuadTreeBounds *
 {
     // 0 1
     // 3 2
-    int ymid = tree->bounds.point.y + (tree->bounds.size.h / 2);
-    int xmid = tree->bounds.point.x + (tree->bounds.size.w / 2);
+    long long ymid = tree->bounds.point.y + (tree->bounds.size.h / 2);
+    long long xmid = tree->bounds.point.x + (tree->bounds.size.w / 2);
 
     if (bounds->point.y + bounds->size.h <= ymid)
     {
@@ -346,7 +346,6 @@ void actr_quad_tree_remove(struct ActrQuadTreeLeaf *leaf)
 
 void actr_quad_tree_insert(struct ActrQuadTree *tree, struct ActrQuadTreeLeaf *newLeaf)
 {
-    int test = 0;
     if (tree->root)
     {
         while (!_actr_quad_tree_bounds_contains(&tree->bounds, &newLeaf->bounds))
@@ -377,9 +376,9 @@ void actr_quad_tree_insert(struct ActrQuadTree *tree, struct ActrQuadTreeLeaf *n
 
         if (!tree->branch[index])
         {
-            int size = tree->bounds.size.w / 2;
-            int x = tree->bounds.point.x;
-            int y = tree->bounds.point.y;
+            long long size = tree->bounds.size.w / 2;
+            long long x = tree->bounds.point.x;
+            long long y = tree->bounds.point.y;
 
             if (1 == index)
             {

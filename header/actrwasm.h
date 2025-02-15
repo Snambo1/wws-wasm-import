@@ -2,35 +2,46 @@
 #ifndef ACTRWASM_H
 #define ACTRWASM_H
 #include "actralloc.h"
+#define PI 3.14
+#define TAU 6.28
 
 // basic header required for integration with the ActR platform
 // all actr_canvas2d prefixed method will follow html CanvasRenderingContext2d as closly as possible
 // see docs at https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D
 
+extern double actr_sin(double value);
+extern double actr_cos(double value);
+extern double actr_atan2(double y, double x);
 extern void _actr_sanity_size(int intSize, int longSize, int floatSize, int doubleSize, int stateSize, void * state);
 extern int actr_authenticated();
 // end helpers
 struct ActrPoint
 {
-    int x;
-    int y;
+    long long x; // 8
+    long long y; // 8
 };
 
 struct ActrSize
 {
-    int w;
-    int h;
+    int w; // 4
+    int h; // 4
+};
+
+struct ActrSizeF
+{
+    float w; // 4
+    float h; // 4
 };
 
 struct ActrState
 {
     // canvasSize will be updated automatically
-    struct ActrSize canvasSize;
+    struct ActrSizeF canvasSize; // 8
     // pointer position will be updated automatically
-    struct ActrPoint pointerPosition;
+    struct ActrPoint pointerPosition; // 16
     // text size will be updated when actr_canvas2d_measureText is called
-    struct ActrPoint textSize;
-    int debug;
+    struct ActrPoint textSize; // 16
+    int debug; // 4
 };
 
 struct ActrState * actrState;
