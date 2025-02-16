@@ -261,7 +261,7 @@ void actr_quad_tree_query(struct ActrQuadTree *root, struct ActrQuadTreeBounds *
             struct ActrQuadTreeLeaf *leaf = tree->items->head[i];
             if (_actr_quad_tree_bounds_intersects(area, &leaf->bounds))
             {
-                actr_vector_add(results, leaf->item);
+                actr_vector_add(results, leaf);
             }
         }
 
@@ -270,7 +270,7 @@ void actr_quad_tree_query(struct ActrQuadTree *root, struct ActrQuadTreeBounds *
             struct ActrQuadTreeLeaf *leaf = tree->stuck->head[i];
             if (_actr_quad_tree_bounds_intersects(area, &leaf->bounds))
             {
-                actr_vector_add(results, leaf->item);
+                actr_vector_add(results, leaf);
             }
         }
     }

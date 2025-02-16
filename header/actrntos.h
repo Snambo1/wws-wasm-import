@@ -1,6 +1,7 @@
 #ifndef ACTRNTOS_H
 #define ACTRNTOS_H
 #include "actrwasm.h"
+#include "actrlog.h"
 
 void reverse(char *str, int len)
 {
@@ -63,6 +64,45 @@ char *itos(long long value)
     }
     return result;
 }
+#define FTOS_CHAR_BUFF_SIZE 128
+
+char * _float_to_char(double x, char *p) {
+    // https://stackoverflow.com/questions/23191203/convert-float-to-string-without-sprintf
+    char *s = p + FTOS_CHAR_BUFF_SIZE; // go to end of buffer
+    unsigned int decimals;  // variable to store the decimals
+    int units;  // variable to store the units (part to left of decimal place)
+    if (x < 0) { // take care of negative numbers
+        decimals = (long long)(x * -100) % 100; // make 1000 for 3 decimals etc.
+        units = (long long)(-1 * x);
+    } else { // positive numbers
+        decimals = (int)(x * 100) % 100;
+        units = (long long)x;
+    }
+
+    *--s = (decimals % 10) + '0';
+    decimals /= 10; // repeat for as many decimal places as you need
+    *--s = (decimals % 10) + '0';
+    *--s = '.';
+
+    do {
+        *--s = (units % 10) + '0';
+        units /= 10;
+    } while (units > 0);
+    if (x < 0) *--s = '-'; // unary minus sign for negative numbers
+    return s;
+}
+char * float_to_char(double x)
+{
+    char buffer[FTOS_CHAR_BUFF_SIZE];
+    for (int i = 0; i < FTOS_CHAR_BUFF_SIZE; i++) {
+        buffer[i] = 0;
+    }
+    char * result = _float_to_char(x, &buffer[0]);
+    int len = FTOS_CHAR_BUFF_SIZE - (result - &buffer[0]);
+    
+    return substr(result, 0, len);
+}
+
 char *ftos(double value, int precision)
 {
     long long ipart = (long long)value;

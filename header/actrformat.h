@@ -21,7 +21,9 @@ struct ActrFormatState *actr_format(char *format)
 void actr_format_float(struct ActrFormatState *state, double value, int precision)
 {
     actr_vector_add(state->allocated, (void *)state->values->count);
-    actr_vector_add(state->values, ftos(value, precision));
+    // actr_vector_add(state->values, ftos(value, precision));
+    actr_vector_add(state->values, float_to_char(value));
+    
 }
 
 void actr_format_int(struct ActrFormatState *state, long long value)

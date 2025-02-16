@@ -23,8 +23,8 @@ struct ActrPoint
 
 struct ActrSize
 {
-    int w; // 4
-    int h; // 4
+    long long w; // 4
+    long long h; // 4
 };
 
 struct ActrSizeF
