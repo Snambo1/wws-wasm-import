@@ -1,0 +1,16 @@
+winget install GnuWin32.Bison    
+winget install GnuWin32.Cpio     
+winget install GnuWin32.DiffUtils
+winget install GnuWin32.File     
+winget install GnuWin32.GetText  
+winget install GnuWin32.Grep     
+winget install GnuWin32.Gzip     
+winget install GnuWin32.M4       
+winget install GnuWin32.Make     
+winget install GnuWin32.UnZip    
+winget install GnuWin32.Zip      
+winget install GnuWin32.FindUtils
+winget install GnuWin32.Gperf    
+winget install GnuWin32.Tar      
+winget install GnuWin32.Tree     
+winget install GnuWin32.Which    
