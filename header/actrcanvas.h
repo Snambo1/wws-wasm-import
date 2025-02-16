@@ -6,6 +6,9 @@ extern void actr_canvas2d_stroke_style(unsigned char r, unsigned char g, unsigne
 
 extern void actr_canvas2d_begin_path();
 
+extern void actr_canvas2d_arc(float x, float y, float radius, float startAngle, float endAngle, int counterclockwise);
+extern void actr_canvas2d_arcTo(float x1, float y1, float x2, float y2, float radius);
+
 extern void actr_canvas2d_ellipse(float x, float y, float radiusX, float radiusY, float rotation, float startAngle, float endAngle, char counterclockwise);
 
 extern void actr_canvas2d_fill();
