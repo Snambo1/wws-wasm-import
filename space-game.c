@@ -246,13 +246,14 @@ void loadArea(struct ActrPoint grid)
                 {
                     int w = 5 + actr_prng() * 25;
                     int h = 5 + actr_prng() * 25;
-                    
+
                     leaf = actr_quad_tree_leaf(
                         bounds.point.x + actr_prng() * gridSize,
                         bounds.point.y + actr_prng() * gridSize,
                         w,
-                        ,
-                        0);
+                        h,
+                        0
+                    );
                     actr_quad_tree_insert(state->tree, leaf);
                 }
             }
@@ -377,6 +378,10 @@ void actr_step(double delta)
     actr_canvas2d_fill_text(5, actrState->canvasSize.h - 5, text);
     actr_free(text);
 
+    actr_canvas2d_begin_path();
+    actr_canvas_moveto(300,300);
+    actr_canvas2d_arcTo(100, 100, 200, 200, 100);
+    actr_canvas2d_stroke();
     text = actr_memory_report();
     actr_canvas2d_fill_text(5, actrState->canvasSize.h - 20, text);
     actr_free(text);
