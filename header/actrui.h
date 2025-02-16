@@ -461,7 +461,7 @@ int _actr_ui_control_is_hovered(struct ActrUIControl * control) {
     return 0;
 }
 
-int _actr_ui__control_is_focused(struct ActrUIControl * control) {
+int _actr_ui_control_is_focused(struct ActrUIControl * control) {
     if (actr_ui_state->focused == control)
     {
         return 1;
@@ -481,7 +481,6 @@ void _actr_ui_set_stroke(unsigned int color)
     actr_canvas2d_stroke_style(r, g, b, a);
 }
 
-void ftbg(long long x, long long y, long long w, long long h);
 void _actr_ui_draw_text(struct ActrUIControlText *text)
 {
     
@@ -500,11 +499,9 @@ void _actr_ui_draw_text(struct ActrUIControlText *text)
         position.x = text->control.leaf->bounds.point.x;
         position.y = text->control.leaf->bounds.point.y;
     }
-
-    ftbg(position.x, position.y, size.w, size.h);
     
-    int focused = _actr_ui__control_is_focused(text);
-    int hovered = _actr_ui_control_is_hovered(text);
+    int focused = _actr_ui_control_is_focused((struct ActrUIControl *)text);
+    int hovered = _actr_ui_control_is_hovered((struct ActrUIControl *)text);
 
     if (focused) _actr_ui_set_fill(text->control.backgroundColorFocused);
     else if (hovered) _actr_ui_set_fill(text->control.backgroundColorHovered);
@@ -594,15 +591,14 @@ void _actr_ui_draw_container(struct ActrUIControlContainer *container)
     actr_canvas2d_stroke_rect(container->control.leaf->bounds.point.x, container->control.leaf->bounds.point.y, container->control.leaf->bounds.size.w, container->control.leaf->bounds.size.h);
 }
 
-void bhf(int h, int f);
 void _actr_ui_draw_button(struct ActrUIControlButton *button)
 {
     struct ActrQuadTreeBounds *bounds = &button->control.leaf->bounds;
     unsigned char r, g, b, a;
 
-    int focused = _actr_ui__control_is_focused(button);
-    int hovered = _actr_ui_control_is_hovered(button);
-    bhf(hovered, focused);
+    int focused = _actr_ui_control_is_focused((struct ActrUIControl *)button);
+    int hovered = _actr_ui_control_is_hovered((struct ActrUIControl *)button);
+
     // background
     if (focused) _actr_ui_set_fill(button->control.backgroundColorFocused);
     else if (hovered) _actr_ui_set_fill(button->control.backgroundColorHovered);
@@ -680,16 +676,16 @@ void actr_ui_draw(double delta)
         switch (control->type)
         {
         case ActrUITypeButton:
-            _actr_ui_draw_button(control);
+            _actr_ui_draw_button((struct ActrUIControlButton *)control);
             break;
         case ActrUITypeText:
-            _actr_ui_draw_text(control);
+            _actr_ui_draw_text((struct ActrUIControlText *)control);
             break;
         case ActrUITypeContainer:
-            _actr_ui_draw_container(control);
+            _actr_ui_draw_container((struct ActrUIControlContainer *)control);
             break;
         case ActrUITypeGradient:
-            _actr_ui_draw_gradient(control);
+            _actr_ui_draw_gradient((struct ActrUIControlGradient *)control);
             break;
         }
     }
