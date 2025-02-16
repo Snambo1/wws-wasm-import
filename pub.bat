@@ -77,9 +77,13 @@ if "%script%" == "fetch-text.c" (
   ) else (
     SET apiKey=0
   )
+) else if "%script%" == "ui-minimal.c" (
+  if "%local%" == "local" (
+    SET apiKey=350f30vvmuh9343be7hmzvy9fufxwaboxfi20l1rxgakuiypey
+  ) else (
+    SET apiKey=0
+  )
 )
-
-
 
 
 

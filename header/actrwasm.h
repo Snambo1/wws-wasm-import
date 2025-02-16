@@ -15,33 +15,50 @@ extern double actr_atan2(double y, double x);
 extern void _actr_sanity_size(int intSize, int longSize, int floatSize, int doubleSize, int stateSize, void * state);
 extern int actr_authenticated();
 // end helpers
-struct ActrPoint
+struct ActrPoint32 // size 8
 {
-    long long x; // 8
-    long long y; // 8
+    int x; // index 0, size 4
+    int y; // index 4, size 4
+};
+struct ActrPoint64 // size 16
+{
+    long long x; // index 0, size 8
+    long long y; // index 8, size 8
 };
 
-struct ActrSize
+struct ActrSize32 // size 8
 {
-    long long w; // 4
-    long long h; // 4
+    int w; // index 0, size 4
+    int h; // index 4, size 4
 };
 
-struct ActrSizeF
+struct ActrSize64 // size 16
 {
-    float w; // 4
-    float h; // 4
+    long long w; // index 0, size 8
+    long long h; // index 8, size 8
 };
 
-struct ActrState
+struct ActrSizeF // size 8
+{
+    float w; // index 0, size 4
+    float h; // index 4, size 4
+};
+
+struct ActrSizeD // size 16
+{
+    double w; // index 0, size 8
+    double h; // index 8, size 8
+};
+
+struct ActrState // size 28
 {
     // canvasSize will be updated automatically
-    struct ActrSizeF canvasSize; // 8
+    struct ActrSize32 canvasSize; // index 0, size 8
     // pointer position will be updated automatically
-    struct ActrPoint pointerPosition; // 16
+    struct ActrPoint32 pointerPosition; // index 8, size 8
     // text size will be updated when actr_canvas2d_measureText is called
-    struct ActrPoint textSize; // 16
-    int debug; // 4
+    struct ActrSize32 textSize; // index 16, size 8
+    int debug; // index 20, size 4
 };
 
 struct ActrState * actrState;

@@ -378,10 +378,6 @@ void actr_step(double delta)
     actr_canvas2d_fill_text(5, actrState->canvasSize.h - 5, text);
     actr_free(text);
 
-    actr_canvas2d_begin_path();
-    actr_canvas_moveto(300,300);
-    actr_canvas2d_arcTo(100, 100, 200, 200, 100);
-    actr_canvas2d_stroke();
     text = actr_memory_report();
     actr_canvas2d_fill_text(5, actrState->canvasSize.h - 20, text);
     actr_free(text);

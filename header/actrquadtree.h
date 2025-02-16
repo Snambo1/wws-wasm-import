@@ -8,8 +8,8 @@
 
 struct ActrQuadTreeBounds
 {
-    struct ActrPoint point;
-    struct ActrSize size;
+    struct ActrPoint64 point;
+    struct ActrSize64 size;
 };
 
 struct ActrQuadTreeLeaf
