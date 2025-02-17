@@ -57,7 +57,7 @@ if "%script%" == "fetch-text.c" (
   if "%local%" == "local" (
     SET apiKey=gtqv62h7kloh158d2gx1zs8uon4t8vaikmjnw9f81p22qne6or
   ) else (
-    SET apiKey=0
+    SET apiKey=vv7ov5pqpdi8vzmsffeffj9zagd96q6trpywsua5uqk2440o0o
   )
 ) else if "%script%" == "merge-sort.c" (
   if "%local%" == "local" (
@@ -69,19 +69,19 @@ if "%script%" == "fetch-text.c" (
   if "%local%" == "local" (
     SET apiKey=5kko3jzy26cp15mg7k2yd8ljsq81zkywa8s74jfzmn4sy4j5qf
   ) else (
-    SET apiKey=0
+    SET apiKey=jic5q8vmysm46hsrqn7xb3kinkqv7ykciz3nswz118lmtrl093
   )
 ) else if "%script%" == "space-game.c" (
   if "%local%" == "local" (
     SET apiKey=kojbzjr12ob7v0lp64824dh6wf4eafb4urplpkshskmtdgnpwz
   ) else (
-    SET apiKey=0
+    SET apiKey=fa2lrmgfo8s266iki593lpwo6pcir2kia1galawrz24rs1wi48
   )
 ) else if "%script%" == "ui-minimal.c" (
   if "%local%" == "local" (
     SET apiKey=350f30vvmuh9343be7hmzvy9fufxwaboxfi20l1rxgakuiypey
   ) else (
-    SET apiKey=0
+    SET apiKey=32vmxkzj20au8zswddx5r2er14lhannymx8r98xv3udec85hb3
   )
 )
 
