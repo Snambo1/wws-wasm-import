@@ -18,10 +18,10 @@ jobs:
   
     - name: build
       run: |
-        clang-18 script.c -I header --target=wasm32-unknown-unknown \
-        --optimize=3 -nostdlib -nostdlibinc -nostdinc -nostdinc++ \
-        -Wl,--no-entry -Wl,--export-all -Wl,--error-limit=0 \
-        -Wl,--allow-undefined --output script.wasm
+        clang-18 space-game.c -fno-inline -I header --target=wasm32-unknown-unknown -Wl,-z,stack-size=65536 ^
+        --optimize=3 -nostdlib -nostdlibinc -nostdinc -nostdinc++  -fno-builtin ^
+        -Wl,--no-entry -Wl,--export-all -Wl,--error-limit=0 ^
+        -Wl,--allow-undefined --wasm-opt --output script.wasm
 
     - name: export
       run: |

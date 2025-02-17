@@ -4,7 +4,7 @@
 #include "actrui.h"
 #include "actrlist.h"
 
-#define GRID_SIZE 1024
+#define GRID_SIZE 4096
 #define MASS_SCALE 0.001
 #define STATION_SIZE 128
 
@@ -125,6 +125,7 @@ struct MyObjectWaypoint {
     
     struct MyObject object;
     char * name;
+    struct ActrQuadTreeLeaf * leaf;
 };
 
 
@@ -133,17 +134,23 @@ enum MyMenuAction {
     MyMenuActionBack,
     MyMenuActionBuildStation,
     MyMenuActionAddWaypoint,
+    MyMenuActionTargetWaypoint,
+    MyMenuActionRemoveTarget,
+    MyMenuActionWaypointMenu,
+    MyMenuActionDeleteWaypoint,
 };
 
 struct MyMenuItem {
     enum MyMenuAction action;
     char * text;
+    void * state;
 };
 
 struct MyMenu {
     int key;
     struct ActrVector * items;
     int position;
+    struct MyMenu * previous;
 };
 
 struct MyMessage {
@@ -164,6 +171,7 @@ struct MyState
     struct MyMenu * menu;
     struct ActrList * messages;
     struct ActrVector *waypoints;
+    struct ActrPointD target;
 };
 
 

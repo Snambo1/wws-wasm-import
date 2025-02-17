@@ -143,6 +143,36 @@ void draw_ship(struct MyObjectShip *ship, int thrusting, int shooting)
         actr_canvas2d_lineto(x + pt.x, y + pt.y);
         actr_canvas2d_stroke();
     }
+    if (state->target.x != 0 || state->target.y != 0)
+    {
+
+        struct ActrPointD displacement = actr_sub(&state->target, &state->player.object.position);
+
+        struct ActrPointD direction = actr_normalize(&displacement);
+        if (0 == actr_isnan(direction.x))
+        {
+            struct ActrFormatState * format = actr_format("%s");
+            actr_format_int(format, actr_distance(&state->target, &state->player.object.position));
+            char * text = actr_format_close(format);
+
+            actr_canvas2d_stroke_style(0, 255, 0, 100);
+            actr_canvas2d_fill_text(
+                actrState->canvasSize.w / 2 + direction.x * 60,
+                actrState->canvasSize.h / 2 + direction.y * 60,
+                text
+            );
+            actr_free(text);
+            actr_canvas2d_begin_path();
+            actr_canvas2d_moveto(
+                actrState->canvasSize.w / 2 + direction.x * 50,
+                actrState->canvasSize.h / 2 + direction.y * 50);
+            actr_canvas2d_lineto(
+                actrState->canvasSize.w / 2 + direction.x * 60,
+                actrState->canvasSize.h / 2 + direction.y * 60);
+
+            actr_canvas2d_stroke();
+        }
+    }
 }
 
 void push_message(char *text)
@@ -189,13 +219,13 @@ void draw_messages()
         list = list->next;
     }
 }
-void draw_waypoint(struct MyObjectWaypoint * waypoint) {
+void draw_waypoint(struct MyObjectWaypoint *waypoint)
+{
     actr_canvas2d_fill_style(255, 0, 255, 100);
     actr_canvas2d_fill_text(
         waypoint->object.position.x - state->player.object.position.x + actrState->canvasSize.w / 2,
         waypoint->object.position.y - state->player.object.position.y + actrState->canvasSize.h / 2,
-        waypoint->name
-    );
+        waypoint->name);
 }
 void draw_view()
 {
@@ -210,6 +240,8 @@ void draw_view()
         struct MyObject *object = leaf->item;
         switch (object->type)
         {
+        case MyObjectTypeShip:
+            break;
         case MyObjectTypeAsteroid:
             draw_asteroid((struct MyObjectAsteroid *)object);
             break;
@@ -255,7 +287,7 @@ void init_area(struct ActrPoint32 grid)
             actr_quad_tree_query(state->tree, &bounds, state->result);
             if (state->result->count == 0)
             {
-                for (int i = 0; i < 1; i++)
+                for (int i = 0; i < 16; i++)
                 {
                     long long x = actr_prng() * GRID_SIZE;
                     long long y = actr_prng() * GRID_SIZE;
@@ -347,7 +379,7 @@ void build_station(struct ActrPointD *point)
             push_message("Other station too close");
             return;
         }
-        
+
         struct ActrPointD center = actr_quad_tree_bounds_center(&leaf->bounds);
         double d2 = actr_distance2(&center, point);
         if (d2 < minDist2)
@@ -433,8 +465,10 @@ void query_view()
 enum MyOre random_ore()
 {
     float v = actr_prng();
-    for (int i = 0; i < MyOreEnd; i++) {
-        if (v < OreProbability[i]) return i;
+    for (int i = 0; i < MyOreEnd; i++)
+    {
+        if (v < OreProbability[i])
+            return i;
     }
     return MyOreStone;
 }
@@ -520,18 +554,20 @@ void actr_resize(float w, float h)
 
 void gotkey(double key);
 
-struct MyMenu *menu_init(int key)
+struct MyMenu *menu_init(int key, struct MyMenu *previous)
 {
     struct MyMenu *result = actr_malloc(sizeof(struct MyMenu));
+    result->previous = previous;
     result->items = actr_vector_init(4, 4);
     result->key = key;
     return result;
 }
 
-void menu_add_item(struct MyMenu *menu, enum MyMenuAction action, char *text)
+void menu_add_item(struct MyMenu *menu, enum MyMenuAction action, char *text, void *state)
 {
     struct MyMenuItem *item = actr_malloc(sizeof(struct MyMenuItem));
     item->action = action;
+    item->state = state;
     actr_heap_string(&item->text, text);
     actr_vector_add(menu->items, item);
 }
@@ -548,10 +584,13 @@ void menu_free(struct MyMenu *menu)
     actr_free(menu);
 }
 
-void menu_close()
+void menu_close(struct MyMenu *menu)
 {
-
-    menu_free(state->menu);
+    if (menu->previous)
+    {
+        menu_free(menu->previous);
+    }
+    menu_free(menu);
     state->menu = 0;
 }
 int check_open_menu(int key)
@@ -562,7 +601,7 @@ int check_open_menu(int key)
     {
         if (state->menu->key != key)
             open = 1;
-        menu_close();
+        menu_close(state->menu);
     }
     else
     {
@@ -570,13 +609,22 @@ int check_open_menu(int key)
     }
     return open;
 }
-
-struct MyObjectWaypoint * init_waypoint(long long x, long long y) {
-    struct MyObjectWaypoint * waypoint = actr_malloc(sizeof(struct MyObjectWaypoint));
-    struct ActrQuadTreeLeaf * leaf = actr_quad_tree_leaf(x, y, 1, 1, waypoint);
+void waypoint_dispose(struct MyObjectWaypoint *waypoint)
+{
+    actr_quad_tree_remove(waypoint->leaf);
+    actr_free(waypoint->leaf);
+    actr_free(waypoint->name);
+    actr_vector_remove(state->waypoints, actr_vector_find(state->waypoints, waypoint));
+    actr_free(waypoint);
+}
+struct MyObjectWaypoint *init_waypoint(long long x, long long y)
+{
+    struct MyObjectWaypoint *waypoint = actr_malloc(sizeof(struct MyObjectWaypoint));
+    struct ActrQuadTreeLeaf *leaf = actr_quad_tree_leaf(x, y, 1, 1, waypoint);
+    waypoint->leaf = leaf;
     actr_quad_tree_insert(state->tree, leaf);
     init_object(&waypoint->object, MyObjectTypeWaypoint, state->player.object.position.x, state->player.object.position.y, 0, 0);
-    struct ActrFormatState * format = actr_format("%s.%s");
+    struct ActrFormatState *format = actr_format("%s.%s");
     actr_format_int(format, x);
     actr_format_int(format, y);
     waypoint->name = actr_format_close(format);
@@ -588,19 +636,21 @@ void actr_key_down(int key)
 {
     if (key == 98)
     {
+        // building
         if (check_open_menu(key))
         {
-            state->menu = menu_init(key);
-            menu_add_item(state->menu, MyMenuActionBuildStation, "Build Station");
-            menu_add_item(state->menu, MyMenuActionClose, "Close");
+            state->menu = menu_init(key, 0);
+            menu_add_item(state->menu, MyMenuActionBuildStation, "Build Station", 0);
+            menu_add_item(state->menu, MyMenuActionClose, "Close", 0);
         }
         return;
     }
     else if (key == 105)
     {
+        // inventory
         if (check_open_menu(key))
         {
-            state->menu = menu_init(key);
+            state->menu = menu_init(key, 0);
             for (int i = 0; i < MyOreEnd; i++)
             {
                 if (state->player.inventory.ore[i].quantity > 0)
@@ -608,21 +658,23 @@ void actr_key_down(int key)
                     struct ActrFormatState *format = actr_format("%s %s");
                     actr_format_str(format, OreNames[i]);
                     actr_format_int(format, state->player.inventory.ore[i].quantity);
-                    menu_add_item(state->menu, MyMenuActionClose, actr_format_close(format));
+                    menu_add_item(state->menu, MyMenuActionClose, actr_format_close(format), 0);
                 }
             }
-            menu_add_item(state->menu, MyMenuActionClose, "Close");
+            menu_add_item(state->menu, MyMenuActionClose, "Close", 0);
         }
     }
     else if (key == 109)
     {
+        // waypoints
         if (check_open_menu(key))
         {
-            state->menu = menu_init(key);
-            menu_add_item(state->menu, MyMenuActionAddWaypoint, "Add Waypoint");
-            struct MyObjectWaypoint * wp;
-            struct ActrFormatState * format;
-            char * text;
+            state->menu = menu_init(key, 0);
+            menu_add_item(state->menu, MyMenuActionAddWaypoint, "Add Waypoint", 0);
+            menu_add_item(state->menu, MyMenuActionRemoveTarget, "Remove Target", 0);
+            struct MyObjectWaypoint *wp;
+            struct ActrFormatState *format;
+            char *text;
             for (int i = 0; i < state->waypoints->count; i++)
             {
                 wp = (struct MyObjectWaypoint *)state->waypoints->head[i];
@@ -630,7 +682,7 @@ void actr_key_down(int key)
                 actr_format_int(format, wp->object.position.x);
                 actr_format_int(format, wp->object.position.x);
                 text = actr_format_close(format);
-                menu_add_item(state->menu, MyMenuActionClose, text);
+                menu_add_item(state->menu, MyMenuActionWaypointMenu, text, wp);
                 actr_free(text);
             }
         }
@@ -656,25 +708,47 @@ void actr_key_down(int key)
         else if (key == 32)
         {
             struct MyMenuItem *item = state->menu->items->head[state->menu->position];
-            
-            struct MyObjectWaypoint * waypoint;
+            struct MyMenu *temp;
+            struct MyObjectWaypoint *waypoint;
+
             switch (item->action)
             {
             case MyMenuActionClose:
-                menu_close();
-                return;
+                break;
+                ;
             case MyMenuActionBuildStation:
                 build_station(&state->player.object.position);
-                menu_close();
-                return;
+                break;
             case MyMenuActionAddWaypoint:
                 init_waypoint(state->player.object.position.x, state->player.object.position.y);
-                
-                menu_close();
+                break;
+            case MyMenuActionRemoveTarget:
+                state->target.x = 0;
+                state->target.y = 0;
+                break;
+            case MyMenuActionDeleteWaypoint:
+                waypoint_dispose(item->state);
+                break;
+            case MyMenuActionWaypointMenu:
+                state->menu = menu_init(0, state->menu);
+                menu_add_item(state->menu, MyMenuActionTargetWaypoint, "Set Target", item->state);
+                menu_add_item(state->menu, MyMenuActionDeleteWaypoint, "Delete Waypoint", item->state);
+                menu_add_item(state->menu, MyMenuActionBack, "Back", 0);
                 return;
+                break;
+            case MyMenuActionTargetWaypoint:
+                waypoint = item->state;
+                state->target.x = waypoint->object.position.x;
+                state->target.y = waypoint->object.position.y;
+                break;
             case MyMenuActionBack:
+                temp = state->menu->previous;
+                state->menu->previous = 0;
+                menu_close(state->menu);
+                state->menu = temp;
                 return;
             }
+            menu_close(state->menu);
         }
     }
     state->keys[key] = 1;
@@ -772,10 +846,14 @@ void update_ship(struct MyObjectShip *ship, double delta, float rotate, float th
         query(area.point.x, area.point.y, area.size.w, area.size.h);
         actr_quad_tree_query(state->tree, &area, state->result);
         querycount(state->result->count);
+        struct MyObject *object;
         for (int i = 0; i < state->result->count; i++)
         {
             struct ActrQuadTreeLeaf *leaf = state->result->head[i];
+
             struct MyObjectAsteroid *asteroid = leaf->item;
+            if (asteroid->object.type != MyObjectTypeAsteroid)
+                continue;
             asteroid->object.mass--;
             if (asteroid->object.mass < 0)
             {
@@ -815,7 +893,8 @@ void draw_menu()
     {
         struct MyMenuItem *item = state->menu->items->head[i];
         int width = margin + margin + strlen(item->text) * 9;
-        if (left + width + margin > actrState->canvasSize.w) {
+        if (left + width + margin > actrState->canvasSize.w)
+        {
             left = margin;
             top += height + margin;
         }
@@ -829,7 +908,6 @@ void draw_menu()
         actr_canvas2d_fill_style(255, 255, 255, 50);
         actr_canvas2d_fill_text(left + margin, top + height - margin, item->text);
         left += width + margin;
-
     }
 }
 [[clang::export_name("actr_step")]]

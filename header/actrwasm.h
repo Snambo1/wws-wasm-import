@@ -14,6 +14,16 @@ extern double actr_cos(double value);
 extern double actr_atan2(double y, double x);
 extern double actr_sqrt(double x);
 
+int actr_isnan(double a)
+{
+    if (a != a)
+    {
+        return 1;
+    }
+    return 0;
+}
+
+
 int actr_sign(double value)
 {
     if (value < 0)
@@ -92,6 +102,14 @@ struct ActrPointD actr_sub(struct ActrPointD *a, struct ActrPointD *b)
     return result;
 }
 
+struct ActrPointD actr_div(struct ActrPointD *a, double b)
+{
+    struct ActrPointD result;
+    result.x = a->x / b;
+    result.y = a->y / b;
+    return result;
+}
+
 double actr_distance2(struct ActrPointD *a, struct ActrPointD *b)
 {
     struct ActrPointD result = actr_sub(a, b);
@@ -101,6 +119,13 @@ double actr_distance2(struct ActrPointD *a, struct ActrPointD *b)
 double actr_distance(struct ActrPointD *a, struct ActrPointD *b)
 {
     return actr_sqrt(actr_distance2(a, b));
+}
+
+struct ActrPointD actr_normalize(struct ActrPointD * point) 
+{
+
+    return actr_div(point, actr_sqrt(point->x * point->x + point->y * point->y));
+
 }
 
 unsigned int actr_pack_bytes(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
