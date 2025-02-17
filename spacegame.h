@@ -1,8 +1,8 @@
 #ifndef SPACEGAME_H
 #define SPACEGAME_H
 #include "actrwasm.h"
-#define GRID_SIZE 4096
-// #define GRID_SIZE 1024
+//#define GRID_SIZE 4096
+#define GRID_SIZE 1024
 #define MASS_SCALE 0.001
 
 enum MyOre {
@@ -10,7 +10,9 @@ enum MyOre {
     MyOreIce,
     MyOreIron,
     MyOreCopper,
-    MyOreNickel,    
+    MyOreNickel,
+    MyOreSilicon,
+    MyOreNone
 };
 
 char * OreNames[] = {
@@ -18,7 +20,18 @@ char * OreNames[] = {
     "Ice",
     "Iron",
     "Copper",
-    "Nickel"
+    "Nickel",
+    "Silicon",
+    "Error"
+};
+unsigned int OreColor[] = {
+    0x765b4664, // stone
+    0xb9e8ea32, // ice
+    0xa19d9464, // iron 
+    0xB8733364, // copper
+    0x6C747464, // nickel
+    0x80808032, // silicon
+    0xff000064
 };
 
 enum MyObjectType {
@@ -55,6 +68,7 @@ struct MyState
     struct ActrQuadTree *tree;
     struct ActrVector *result;
     struct ActrPoint32 lastGrid;
+    int paused;
 };
 
 // a1 is line1 start, a2 is line1 end, b1 is line2 start, b2 is line2 end
@@ -68,6 +82,7 @@ struct MyAsteroid *init_asteroid(enum MyOre ore, double x, double y, float rotat
 void init_object(struct MyObject * object, enum MyObjectType type, double x, double y, float rotation, float mass);
 int lines_intersect(struct ActrPointF a1, struct ActrPointF a2, struct ActrPointF b1, struct ActrPointF b2);
 void queryView();
+enum MyOre random_ore();
 void rotate_point(struct ActrPointD *point, double cos, double sin);
 struct ActrPoint32 togrid(struct ActrPointD point);
 double wrapN(double value, double N);

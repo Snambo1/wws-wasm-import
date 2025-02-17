@@ -13,6 +13,13 @@ extern double actr_sin(double value);
 extern double actr_cos(double value);
 extern double actr_atan2(double y, double x);
 extern double actr_sqrt(double x);
+
+int actr_sign(double value){
+    if (value < 0) return -1;
+    if (value > 0) return 1;
+    return 0;
+}
+
 extern void _actr_sanity_size(int intSize, int longSize, int floatSize, int doubleSize, int stateSize, void * state);
 extern int actr_authenticated();
 // end helpers

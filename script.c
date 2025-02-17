@@ -8,6 +8,10 @@
 // recommended compilation method
 // clang script.c --target=wasm32-unknown-unknown --optimize=3 -nostdlib -nostdlibinc -nostdinc -nostdinc++ -Wl,--no-entry -Wl,--allow-undefined --wasm-opt --output script.wasm
 
+// untested emscripten method
+// emcc -I header  -O3 --no-entry -s WASM=1 -s ENVIRONMENT=web -s ERROR_ON_UNDEFINED_SYMBOLS=0 -Wl,--export=__heap_base space-game.c -o C:\actrcontent\userwasm\10009.wasm
+
+// emcc -I header  -O3 --no-entry -s WASM=1 -s ENVIRONMENT=web -s ERROR_ON_UNDEFINED_SYMBOLS=0  space-game.c -o C:\actrcontent\userwasm\10009.wasm
 // previous attempts
 // clang script.c --target=wasm32-unknown-unknown --optimize=3 -nostdlib -nostdlibinc -nostdinc -nostdinc++ -Wl,--export-all -Wl,--no-entry -Wl,--allow-undefined --output script.wasm
 // clang script.c --target=wasm32-unknown-unknown --optimize=3 -nostdlib -Wl,--export-all -Wl,--no-entry -Wl,--allow-undefined --output script.wasm

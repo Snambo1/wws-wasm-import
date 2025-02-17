@@ -43,7 +43,7 @@ int _itos(long long value, char *string)
     reverse(string, i);
     return i;
 }
-long long pow(long long base, int exponent)
+long long actr_pow(long long base, int exponent)
 {
     long long result = base;
     for (int i = 1; i < exponent; i++)
@@ -115,7 +115,7 @@ char *ftos(double value, int precision)
     if (precision != 0)
     {
         buffer[i++] = '.';
-        fpart = fpart * pow(10, precision);
+        fpart = fpart * actr_pow(10, precision);
         if (fpart < 0)
         {
             fpart = -fpart;

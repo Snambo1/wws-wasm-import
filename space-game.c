@@ -10,10 +10,12 @@ struct MyState *state;
 
 void draw_asteroid(struct MyAsteroid *asteroid)
 {
-
     struct ActrPointD pt;
     struct ActrPointD start;
-    actr_canvas2d_stroke_style(255, 255, 255, 100);
+    unsigned char r, g, b, a;
+
+    actr_unpack_bytes(OreColor[asteroid->ore], &r, &g, &b, &a);
+    actr_canvas2d_fill_style(r, g, b, a);
 
     asteroid->object.rotation += 0.0001;
 
@@ -31,17 +33,18 @@ void draw_asteroid(struct MyAsteroid *asteroid)
     //*/
 
     // asteroid->object.mass = 10;
-    actr_canvas2d_fill_style(255, 255, 255, 100);
-    //*
-    struct ActrFormatState *format = actr_format("%s.%s %sx%s");
-    actr_format_int(format, asteroid->object.position.x);
-    actr_format_int(format, asteroid->object.position.y);
+    // actr_canvas2d_fill_style(255, 255, 255, 100);
+    ///*
+    
+    struct ActrFormatState *format = actr_format("%s x %s");
     actr_format_str(format, OreNames[asteroid->ore]);
     actr_format_int(format, asteroid->object.mass);
     char *text = actr_format_close(format);
-    actr_canvas2d_fill_text(x, y, text);
+    actr_canvas2d_fill_text(x - asteroid->object.distance, y - asteroid->object.distance - 5, text);
     actr_free(text);
+
     //*/
+
     actr_canvas2d_begin_path();
     pt.x = -0.70710676237;
     pt.y = -0.70710676237;
@@ -66,7 +69,8 @@ void draw_asteroid(struct MyAsteroid *asteroid)
 
     actr_canvas2d_lineto(x + start.x * asteroid->object.distance, y + start.y * asteroid->object.distance);
 
-    actr_canvas2d_stroke();
+    actr_canvas2d_fill();
+    // actr_canvas2d_stroke();
 }
 
 void draw_ship(struct MyShip *ship, int thrusting, int shooting)
@@ -74,8 +78,9 @@ void draw_ship(struct MyShip *ship, int thrusting, int shooting)
     struct ActrPointD pt;
     struct ActrPointD tip;
 
-    double sin = actr_sin(ship->object.rotation);
-    double cos = actr_cos(ship->object.rotation);
+    double sin = ship->object.sin;
+    double cos = ship->object.cos;
+
     float length = 25;
     float thrust = 10;
     float shoot = 50;
@@ -85,7 +90,6 @@ void draw_ship(struct MyShip *ship, int thrusting, int shooting)
 
     actr_canvas2d_stroke_style(255, 255, 255, 100);
     actr_canvas2d_begin_path();
-
     actr_canvas2d_moveto(x, y);
 
     // start at bottom left point
@@ -162,7 +166,6 @@ struct ActrPointD fromgrid(struct ActrPoint32 point)
     result.y = point.y * GRID_SIZE;
     return result;
 }
-void assmass(int w, int h, int m);
 void init_area(struct ActrPoint32 grid)
 {
     int index = 0;
@@ -186,7 +189,7 @@ void init_area(struct ActrPoint32 grid)
             actr_quad_tree_query(state->tree, &bounds, state->result);
             if (state->result->count == 0)
             {
-                for (int i = 0; i < 9; i++)
+                for (int i = 0; i < 2; i++)
                 {
                     long long x = actr_prng() * GRID_SIZE;
                     long long y = actr_prng() * GRID_SIZE;
@@ -201,24 +204,24 @@ void init_area(struct ActrPoint32 grid)
                     }
 
                     int ld = distance + 1;
-                    if (x < ld)
+                    if (x <= ld)
                     {
-                        x += (ld - x);
+                        x += (ld - x + 1);
                     }
-                    else if (x + ld > GRID_SIZE)
+                    else if (x + ld >= GRID_SIZE)
                     {
-                        x -= (x + ld - GRID_SIZE);
+                        x -= (x + ld - GRID_SIZE + 1);
                     }
-                    if (y < ld)
+                    if (y <= ld)
                     {
-                        y += (ld - x);
+                        y += (ld - x + 1);
                     }
-                    else if (y + ld > GRID_SIZE)
+                    else if (y + ld >= GRID_SIZE)
                     {
-                        y -= (y + ld - GRID_SIZE);
+                        y -= (y + ld - GRID_SIZE + 1);
                     }
 
-                    struct MyAsteroid *asteroid = init_asteroid(MyOreIce, point.x + x, point.y + y, rotation, mass, distance);
+                    struct MyAsteroid *asteroid = init_asteroid(random_ore(), point.x + x, point.y + y, rotation, mass, distance);
 
                     leaf = actr_quad_tree_leaf(point.x + x - ld, point.y + y - ld, ld * 2.0, ld * 2.0, asteroid);
                     actr_quad_tree_insert(state->tree, leaf);
@@ -312,6 +315,16 @@ void queryView()
     actr_quad_tree_query(state->tree, &bounds, state->result);
 }
 
+enum MyOre random_ore() {
+    float v = actr_prng();
+    if (v < 0.1) return MyOreIce;
+    if (v < 0.2) return MyOreIron;
+    if (v < 0.3) return MyOreCopper;
+    if (v < 0.4) return MyOreNickel;
+    if (v < 0.5) return MyOreSilicon;
+    return MyOreStone;
+}
+
 void rotate_point(struct ActrPointD *point, double cos, double sin)
 {
     // double x = actr_sin(rotation);
@@ -399,84 +412,72 @@ void gotkey(double key);
 [[clang::export_name("actr_key_up")]]
 void actr_key_up(int key)
 {
+    if (key == 112) {
+        if (state->paused) {
+            state->paused = 0;
+        } else {
+            state->paused = 1;
+        }
+    }
     state->keys[key] = 0;
     gotkey(key);
+}
+
+// int main() { }
+// void initialize() { main(); }
+
+void update_ship(double delta, float rotate, float thrust, int shooting) {
+    double y = state->player.object.cos = actr_cos(state->player.object.rotation);
+    double x = state->player.object.sin = actr_sin(state->player.object.rotation);
+
+    float force = 999;
+
+    state->player.object.rotation = wrapTAU(state->player.object.rotation);
+
+    if (thrust > 0)
+    {
+        state->player.object.velocity.x += x * delta * force;
+        state->player.object.velocity.y += y * delta * force;
+    }
+    if (rotate != 0)
+    {
+        state->player.object.rotation += delta * (shooting ? 1 : 5) * rotate;
+    }
+
+    state->player.object.position.x += state->player.object.velocity.x * delta;
+    state->player.object.position.y += state->player.object.velocity.y * delta;
+    
 }
 
 [[clang::export_name("actr_step")]]
 void actr_step(double delta)
 {
-    double y = actr_cos(state->player.object.rotation);
-    double x = actr_sin(state->player.object.rotation);
+    if (state->paused) return;
+    
     float length = 50;
-    float force = 99;
-    state->player.object.rotation = wrapTAU(state->player.object.rotation);
-    int shooting = 0;
-    if (state->keys[32]) {
-        shooting = 1;
-    }
-    if (state->keys[1])
-    {
-        state->player.object.rotation += delta * (shooting ? 1 : 5);
-    }
-    else if (state->keys[2])
-    {
-        state->player.object.rotation -= delta * (shooting ? 1 : 5);
-    }
+    int shoot= 0;
+    int thrust = 0;
+    int rotate = 0;
+
+    if (state->keys[5]) thrust = 1;
+    if (state->keys[32]) shoot = 1;
+
+    if (state->keys[1]) rotate = 1;
+    else if (state->keys[2]) rotate = -1;
     else if (state->keys[6])
     {
         double desired = actr_atan2(-state->player.object.velocity.y, state->player.object.velocity.x) - PI / 2.0;
-        double rotationError = wrapPITAU(desired - state->player.object.rotation);
-        state->player.object.rotation += rotationError * delta * (shooting ? 0.2 : 0.5);
+        rotate = actr_sign(wrapPITAU(desired - state->player.object.rotation));
+        
     }
 
-    state->player.object.position.x += state->player.object.velocity.x * delta;
-    state->player.object.position.y += state->player.object.velocity.y * delta;
-
-    int wrap = 0;
-    if (wrap)
-    {
-        if (state->player.object.position.x > actrState->canvasSize.w)
-        {
-            state->player.object.position.x = 0;
-        }
-        else if (state->player.object.position.x < 0)
-        {
-            state->player.object.position.x = actrState->canvasSize.w;
-        }
-
-        if (state->player.object.position.y > actrState->canvasSize.h)
-        {
-            state->player.object.position.y = 0;
-        }
-        else if (state->player.object.position.y < 0)
-        {
-            state->player.object.position.y = actrState->canvasSize.h;
-        }
-    }
-
-    int thrusting = 0;
-    if (state->keys[5])
-    {
-        thrusting = 1;
-        state->player.object.velocity.x += x * delta * force;
-        state->player.object.velocity.y += y * delta * force;
-    }
-    
-
-    //*
-    state->player.object.velocity.x *= 0.999999;
-    state->player.object.velocity.y *= 0.999999;
-    //*/
+    update_ship(delta, rotate, thrust, shoot);
 
     actr_canvas2d_fill_style(0, 0, 0, 100);
     actr_canvas2d_fill_rect(-10, -10, actrState->canvasSize.w + 20, actrState->canvasSize.h + 20);
 
-    // actr_canvas_moveto(state->player.position.x, state->player.position.y);
-
-    // actr_canvas_lineto(state->player.position.x + x * length, state->player.position.y + y * length);
     drawView();
-    draw_ship(&state->player, thrusting, shooting);
+    draw_ship(&state->player, thrust, shoot);
 
     // struct ActrFormatState *format = actr_format("pos %s");
     struct ActrPoint32 tgrid = togrid(state->player.object.position);
@@ -487,12 +488,11 @@ void actr_step(double delta)
         init_area(tgrid);
     }
 
+    // format
     struct ActrFormatState *format = actr_format("pos %s x %s grid %s x %s delta %s");
-
     // pos
     actr_format_int(format, state->player.object.position.x);
     actr_format_int(format, state->player.object.position.y);
-
     // grid
     actr_format_int(format, tgrid.x);
     actr_format_int(format, tgrid.y);
@@ -500,7 +500,6 @@ void actr_step(double delta)
     actr_format_float(format, delta * 1000);
 
     char *text = actr_format_close(format);
-
     actr_canvas2d_fill_style(255, 255, 255, 100);
     actr_canvas2d_fill_text(5, actrState->canvasSize.h - 5, text);
     actr_free(text);
@@ -508,6 +507,7 @@ void actr_step(double delta)
     text = actr_memory_report();
     actr_canvas2d_fill_text(5, actrState->canvasSize.h - 20, text);
     actr_free(text);
+
     struct ActrPoint64 offset;
 
     // offset.x = -(state->player.position.x + actrState->canvasSize.w);
