@@ -553,8 +553,8 @@ void _actr_ui_draw_text(struct ActrUIControlText *text)
         actr_canvas2d_begin_path();
 
         int cursorStart = position.x + 5;
-        actr_canvas_moveto(cursorStart + (text->cursor - substart) * charWidth, position.y + size.h - 3);
-        actr_canvas_lineto(cursorStart + (text->cursor + 1 - substart) * charWidth, position.y + size.h - 3);
+        actr_canvas2d_moveto(cursorStart + (text->cursor - substart) * charWidth, position.y + size.h - 3);
+        actr_canvas2d_lineto(cursorStart + (text->cursor + 1 - substart) * charWidth, position.y + size.h - 3);
         actr_canvas2d_stroke();
     }
 
@@ -705,8 +705,10 @@ void actr_ui_draw(double delta)
         mty(actrState->textSize.h);
         actr_canvas2d_fill_text(1, actrState->textSize.h, mem);
         actr_free(mem);
-
-        actr_quad_tree_draw(actr_ui_state->tree);
+        struct ActrPoint64 offset;
+        offset.x = 0;
+        offset.y = 0;
+        actr_quad_tree_draw(actr_ui_state->tree, offset);
     }
 }
 
