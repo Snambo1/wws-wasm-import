@@ -2,6 +2,8 @@
     "C_Cpp.errorSquiggles": "disabled",
     "files.associations": {
         "actrasync.h": "c",
-        "actrui.h": "c"
+        "actrui.h": "c",
+        "cmath": "c",
+        "xutility": "c"
     }
 }

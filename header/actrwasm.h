@@ -12,6 +12,7 @@
 extern double actr_sin(double value);
 extern double actr_cos(double value);
 extern double actr_atan2(double y, double x);
+extern double actr_sqrt(double x);
 extern void _actr_sanity_size(int intSize, int longSize, int floatSize, int doubleSize, int stateSize, void * state);
 extern int actr_authenticated();
 // end helpers
@@ -24,6 +25,16 @@ struct ActrPoint64 // size 16
 {
     long long x; // index 0, size 8
     long long y; // index 8, size 8
+};
+struct ActrPointF // size 8
+{
+    float x; // index 0, size 4
+    float y; // index 4, size 4
+};
+struct ActrPointD // size 16
+{
+    double x; // index 0, size 8
+    double y; // index 8, size 8
 };
 
 struct ActrSize32 // size 8

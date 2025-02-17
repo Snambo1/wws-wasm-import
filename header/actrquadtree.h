@@ -184,11 +184,11 @@ int _actr_quad_tree_index(struct ActrQuadTree *tree, struct ActrQuadTreeBounds *
     }
     return -1;
 }
-void _actr_quad_tree_draw_bounds(struct ActrQuadTreeBounds *bounds)
+void _actr_quad_tree_draw_bounds(struct ActrQuadTreeBounds *bounds, struct ActrPoint64 offset)
 {
-    actr_canvas2d_stroke_rect(bounds->point.x, bounds->point.y, bounds->size.w, bounds->size.h);
+    actr_canvas2d_stroke_rect(bounds->point.x - offset.x, bounds->point.y - offset.y, bounds->size.w, bounds->size.h);
 }
-void actr_quad_tree_draw(struct ActrQuadTree *tree)
+void actr_quad_tree_draw(struct ActrQuadTree *tree, struct ActrPoint64 offset)
 {
     struct ActrQuadTreeLeaf *leaf;
     struct ActrVector *trees = actr_vector_init(20, 16);
@@ -200,25 +200,25 @@ void actr_quad_tree_draw(struct ActrQuadTree *tree)
         tree = trees->head[0];
 
         actr_canvas2d_stroke_style(0, 255, 0, 10);
-        _actr_quad_tree_draw_bounds(&tree->bounds);
+        _actr_quad_tree_draw_bounds(&tree->bounds, offset);
 
         if (tree->items)
         {
-            actr_canvas2d_stroke_style(0, 255, 255, 10);
+            actr_canvas2d_stroke_style(255, 0, 0, 100);
             for (int i = 0; i < tree->items->count; i++)
             {
                 leaf = (struct ActrQuadTreeLeaf *)(tree->items->head[i]);
-                _actr_quad_tree_draw_bounds(&leaf->bounds);
+                _actr_quad_tree_draw_bounds(&leaf->bounds, offset);
             }
         }
 
         if (tree->stuck)
         {
-            actr_canvas2d_stroke_style(200, 200, 200, 10);
+            actr_canvas2d_stroke_style(255, 0, 0, 100);
             for (int i = 0; i < tree->stuck->count; i++)
             {
                 leaf = (struct ActrQuadTreeLeaf *)(tree->stuck->head[i]);
-                _actr_quad_tree_draw_bounds(&leaf->bounds);
+                _actr_quad_tree_draw_bounds(&leaf->bounds, offset);
             }
         }
 

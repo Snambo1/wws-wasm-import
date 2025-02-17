@@ -55,7 +55,19 @@ void generateUI()
             button->control.borderColor = actr_pack_bytes(0, 0, 0, 100);
             
         }
+
         button->control.backgroundColor = state->colorCode[i];
+        button->control.backgroundColorHovered = state->colorCode[i];
+        button->control.backgroundColorFocused = state->colorCode[i];
+
+        button->control.foregroundColor = state->colorCode[i];
+        button->control.foregroundColorHovered = state->colorCode[i];
+        button->control.foregroundColorFocused = state->colorCode[i];
+
+        button->control.borderColor = state->colorCode[i];
+        button->control.borderColorHovered = state->colorCode[i];
+        button->control.borderColorFocused = state->colorCode[i];
+
         button->control.state = (void *)state->colorCode[i];
         actr_vector_add(state->colorButtons, button);
     }
@@ -278,10 +290,12 @@ void paint(int x, int y)
         {
             if (state->delete)
             {
+                struct ActrQuadTreeLeaf *leaf;
                 struct ActrUIControl *control;
                 for (int i = 0; i < state->result->count; i++)
                 {
-                    control = state->result->head[i];
+                    leaf = state->result->head[i];
+                    control = leaf->item;
                     if (control->type == ActrUITypeContainer)
                     {
                         actr_ui_remove_control(control);
