@@ -14,13 +14,16 @@ extern double actr_cos(double value);
 extern double actr_atan2(double y, double x);
 extern double actr_sqrt(double x);
 
-int actr_sign(double value){
-    if (value < 0) return -1;
-    if (value > 0) return 1;
+int actr_sign(double value)
+{
+    if (value < 0)
+        return -1;
+    if (value > 0)
+        return 1;
     return 0;
 }
 
-extern void _actr_sanity_size(int intSize, int longSize, int floatSize, int doubleSize, int stateSize, void * state);
+extern void _actr_sanity_size(int intSize, int longSize, int floatSize, int doubleSize, int stateSize, void *state);
 extern int actr_authenticated();
 // end helpers
 struct ActrPoint32 // size 8
@@ -76,10 +79,29 @@ struct ActrState // size 28
     struct ActrPoint32 pointerPosition; // index 8, size 8
     // text size will be updated when actr_canvas2d_measureText is called
     struct ActrSize32 textSize; // index 16, size 8
-    int debug; // index 20, size 4
+    int debug;                  // index 20, size 4
 };
 
-struct ActrState * actrState;
+struct ActrState *actrState;
+
+struct ActrPointD actr_sub(struct ActrPointD *a, struct ActrPointD *b)
+{
+    struct ActrPointD result;
+    result.x = a->x - b->x;
+    result.y = a->y - b->y;
+    return result;
+}
+
+double actr_distance2(struct ActrPointD *a, struct ActrPointD *b)
+{
+    struct ActrPointD result = actr_sub(a, b);
+    return result.x * result.x + result.y * result.y;
+}
+
+double actr_distance(struct ActrPointD *a, struct ActrPointD *b)
+{
+    return actr_sqrt(actr_distance2(a, b));
+}
 
 unsigned int actr_pack_bytes(unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 {
@@ -101,28 +123,33 @@ void _actr_sanity()
 }
 
 /// @brief get length of null terminated string
-/// @param string 
+/// @param string
 /// @return length of the string
-unsigned long strlen(const char * string) {
+unsigned long strlen(const char *string)
+{
     int result = 0;
-    while (*string++) {
+    while (*string++)
+    {
         result++;
     }
     return result;
 }
 
-char *substr(char * text, int start, int length) {
-    if (length == 0) {
+char *substr(char *text, int start, int length)
+{
+    if (length == 0)
+    {
         length = strlen(text) - start;
     }
-    char * newText = actr_malloc(length + 1);
+    char *newText = actr_malloc(length + 1);
 
-    for (int i = 0; i < length; i++) {
-        newText[i] = text[start + i]; 
+    for (int i = 0; i < length; i++)
+    {
+        newText[i] = text[start + i];
     }
     return newText;
 }
-void actr_heap_string(char ** target, char *text)
+void actr_heap_string(char **target, char *text)
 {
     if (*target != 0)
     {
@@ -130,7 +157,8 @@ void actr_heap_string(char ** target, char *text)
     }
     int size = strlen(text);
     char *result = actr_malloc(size + 1);
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < size; i++)
+    {
         result[i] = text[i];
     }
     *target = result;

@@ -6,6 +6,7 @@
 
 #define GRID_SIZE 1024
 #define MASS_SCALE 0.001
+#define STATION_SIZE 128
 
 enum MyOre {
     MyOreStone,
@@ -14,6 +15,11 @@ enum MyOre {
     MyOreCopper,
     MyOreNickel,
     MyOreSilicon,
+    MyOreCobalt,
+    MyOreSilver,
+    MyOreGold,
+    MyOrePlatinum,
+    MyOreUranium,
     MyOreEnd // used as the end if this ore is displayed in the game that is an error
 };
 
@@ -24,32 +30,60 @@ char * OreNames[] = {
     "Copper",
     "Nickel",
     "Silicon",
+    "Cobalt",
+    "Silver",
+    "Gold",
+    "Platinum",
+    "Uranium",
     "Error"
 };
 
 unsigned int OreColor[] = {
     0x765b4664, // stone
-    0xb9e8ea32, // ice
+    0xb9e8ea64, // ice
     0xa19d9464, // iron 
     0xB8733364, // copper
     0x6C747464, // nickel
-    0x80808032, // silicon
+    0x80808064, // silicon
+    0x0047AB64, // cobalt
+    0xC0C0C064, // silver
+    0xFFD70064, // gold
+    0xE5E4E264, // platinum
+    0xE0FF6664, // uranium
     0xff000064, // error
+};
+
+float OreProbability[] = {
+    0.25, // stone
+    0.30, // ice
+    0.40, // iron 
+    0.45, // copper
+    0.50, // nickel
+    0.55, // silicon
+    0.60, // cobalt
+    0.65, // silver
+    0.70, // gold
+    0.75, // platinum
+    0.80, // uranium
 };
 
 enum MyInventoryItemType {
     MyInventoryItemTypeOre
 };
 
+
 struct MyInventoryItem {
     enum MyInventoryItemType type;
     unsigned int quantity;
 };
 
+
+
 enum MyObjectType {
     MyObjectTypeAsteroid,
     MyObjectTypeShip,
     MyObjectTypeStation,
+    MyObjectTypeWaypoint,
 };
 
 struct MyInventory {
@@ -64,26 +98,41 @@ struct MyObject {
     float mass;
     float sin;
     float cos;
-    float distance;
     int identity;
 };
+
 
 struct MyObjectAsteroid { 
     struct MyObject object;
     enum MyOre ore;
+    float scale;
+
 };
 
 struct MyObjectShip
 {
     struct MyObject object;
-    
     struct MyInventory inventory;
 };
+
+struct MyObjectStation
+{
+    struct MyObject object;
+    struct MyInventory inventory;
+};
+
+struct MyObjectWaypoint {
+    
+    struct MyObject object;
+    char * name;
+};
+
 
 enum MyMenuAction {
     MyMenuActionClose,
     MyMenuActionBack,
-    MyMenuActionBuildBase,
+    MyMenuActionBuildStation,
+    MyMenuActionAddWaypoint,
 };
 
 struct MyMenuItem {
@@ -114,6 +163,7 @@ struct MyState
     int identity;
     struct MyMenu * menu;
     struct ActrList * messages;
+    struct ActrVector *waypoints;
 };
 
 
@@ -127,7 +177,7 @@ void init_area(struct ActrPoint32 grid);
 struct MyObjectAsteroid *init_asteroid(enum MyOre ore, double x, double y, float rotation, float mass, float distance);
 void init_object(struct MyObject * object, enum MyObjectType type, double x, double y, float rotation, float mass);
 int lines_intersect(struct ActrPointF a1, struct ActrPointF a2, struct ActrPointF b1, struct ActrPointF b2);
-void queryView();
+void query_view();
 enum MyOre random_ore();
 void rotate_point(struct ActrPointD *point, double cos, double sin);
 struct ActrPoint32 togrid(struct ActrPointD point);

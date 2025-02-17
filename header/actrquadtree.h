@@ -9,7 +9,7 @@
 struct ActrQuadTreeBounds
 {
     struct ActrPoint64 point;
-    struct ActrSize64 size;
+    struct ActrSize32 size;
 };
 
 struct ActrQuadTreeLeaf
@@ -43,6 +43,14 @@ void _actr_quad_tree_dispose(struct ActrQuadTree *tree) {
     actr_vector_free(tree->stuck);
     actr_free(tree->branch);
     actr_free(tree);
+}
+struct ActrPointD actr_quad_tree_bounds_center(struct ActrQuadTreeBounds * bounds)
+{
+    struct ActrPointD result;
+    result.x = bounds->point.x + bounds->size.w / 2;
+    result.y = bounds->point.y + bounds->size.h / 2;
+    return result;
+    
 }
 struct ActrQuadTree *actr_quad_tree_init(int root, long long x, long long y, long long size, struct ActrQuadTree *parent)
 {

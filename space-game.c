@@ -8,7 +8,14 @@
 #include "actrlist.h"
 
 struct MyState *state;
-
+void draw_station(struct MyObjectStation *station)
+{
+    actr_canvas2d_fill_style(0, 255, 0, 100);
+    actr_canvas2d_fill_rect(
+        station->object.position.x - state->player.object.position.x + actrState->canvasSize.w / 2,
+        station->object.position.y - state->player.object.position.y + actrState->canvasSize.h / 2,
+        STATION_SIZE, STATION_SIZE);
+}
 void draw_asteroid(struct MyObjectAsteroid *asteroid)
 {
     struct ActrPointD pt;
@@ -18,7 +25,7 @@ void draw_asteroid(struct MyObjectAsteroid *asteroid)
     actr_unpack_bytes(OreColor[asteroid->ore], &r, &g, &b, &a);
     actr_canvas2d_fill_style(r, g, b, a);
 
-    asteroid->object.rotation += 0.0001;
+    asteroid->object.rotation += 0.001;
 
     int x = asteroid->object.position.x - state->player.object.position.x + actrState->canvasSize.w / 2;
     int y = asteroid->object.position.y - state->player.object.position.y + actrState->canvasSize.h / 2;
@@ -41,7 +48,7 @@ void draw_asteroid(struct MyObjectAsteroid *asteroid)
     actr_format_str(format, OreNames[asteroid->ore]);
     actr_format_int(format, asteroid->object.mass);
     char *text = actr_format_close(format);
-    actr_canvas2d_fill_text(x - asteroid->object.distance, y - asteroid->object.distance - 5, text);
+    actr_canvas2d_fill_text(x - asteroid->scale, y - asteroid->scale - 5, text);
     actr_free(text);
 
     //*/
@@ -51,24 +58,24 @@ void draw_asteroid(struct MyObjectAsteroid *asteroid)
     pt.y = -0.70710676237;
     rotate_point(&pt, asteroid->object.cos, asteroid->object.sin);
     start = pt;
-    actr_canvas2d_moveto(x + pt.x * asteroid->object.distance, y + pt.y * asteroid->object.distance);
+    actr_canvas2d_moveto(x + pt.x * asteroid->scale, y + pt.y * asteroid->scale);
 
     pt.x = 0.70710676237;
     pt.y = -0.70710676237;
     rotate_point(&pt, asteroid->object.cos, asteroid->object.sin);
-    actr_canvas2d_lineto(x + pt.x * asteroid->object.distance, y + pt.y * asteroid->object.distance);
+    actr_canvas2d_lineto(x + pt.x * asteroid->scale, y + pt.y * asteroid->scale);
 
     pt.x = 0.70710676237;
     pt.y = 0.70710676237;
     rotate_point(&pt, asteroid->object.cos, asteroid->object.sin);
-    actr_canvas2d_lineto(x + pt.x * asteroid->object.distance, y + pt.y * asteroid->object.distance);
+    actr_canvas2d_lineto(x + pt.x * asteroid->scale, y + pt.y * asteroid->scale);
 
     pt.x = -0.70710676237;
     pt.y = 0.70710676237;
     rotate_point(&pt, asteroid->object.cos, asteroid->object.sin);
-    actr_canvas2d_lineto(x + pt.x * asteroid->object.distance, y + pt.y * asteroid->object.distance);
+    actr_canvas2d_lineto(x + pt.x * asteroid->scale, y + pt.y * asteroid->scale);
 
-    actr_canvas2d_lineto(x + start.x * asteroid->object.distance, y + start.y * asteroid->object.distance);
+    actr_canvas2d_lineto(x + start.x * asteroid->scale, y + start.y * asteroid->scale);
 
     actr_canvas2d_fill();
     // actr_canvas2d_stroke();
@@ -85,7 +92,7 @@ void draw_ship(struct MyObjectShip *ship, int thrusting, int shooting)
     long long x = actrState->canvasSize.w / 2;
     long long y = actrState->canvasSize.h / 2;
 
-    actr_canvas2d_stroke_style(255, 255, 255, 100);
+    actr_canvas2d_fill_style(255, 255, 255, 100);
     actr_canvas2d_begin_path();
     actr_canvas2d_moveto(x, y);
 
@@ -111,7 +118,7 @@ void draw_ship(struct MyObjectShip *ship, int thrusting, int shooting)
 
     // close the path
     actr_canvas2d_lineto(x, y);
-    actr_canvas2d_stroke();
+    actr_canvas2d_fill();
 
     if (thrusting)
     {
@@ -182,18 +189,36 @@ void draw_messages()
         list = list->next;
     }
 }
-
-void drawView()
+void draw_waypoint(struct MyObjectWaypoint * waypoint) {
+    actr_canvas2d_fill_style(255, 0, 255, 100);
+    actr_canvas2d_fill_text(
+        waypoint->object.position.x - state->player.object.position.x + actrState->canvasSize.w / 2,
+        waypoint->object.position.y - state->player.object.position.y + actrState->canvasSize.h / 2,
+        waypoint->name
+    );
+}
+void draw_view()
 {
     long long x = state->player.object.position.x - actrState->canvasSize.w / 2;
     long long y = state->player.object.position.y - actrState->canvasSize.h / 2;
 
-    queryView();
+    query_view();
     actr_canvas2d_fill_style(255, 255, 255, 10);
     for (int i = 0; i < state->result->count; i++)
     {
         struct ActrQuadTreeLeaf *leaf = state->result->head[i];
-        draw_asteroid((struct MyObjectAsteroid *)leaf->item);
+        struct MyObject *object = leaf->item;
+        switch (object->type)
+        {
+        case MyObjectTypeAsteroid:
+            draw_asteroid((struct MyObjectAsteroid *)object);
+            break;
+        case MyObjectTypeStation:
+            draw_station((struct MyObjectStation *)object);
+            break;
+        case MyObjectTypeWaypoint:
+            draw_waypoint((struct MyObjectWaypoint *)object);
+        }
         // actr_canvas2d_fill_text(leaf->bounds.point.x - x, leaf->bounds.point.y - y, leaf->item);
         // actr_canvas2d_fill_rect(leaf->bounds.point.x - x, leaf->bounds.point.y - y, leaf->bounds.size.w, leaf->bounds.size.h);
     }
@@ -237,14 +262,14 @@ void init_area(struct ActrPoint32 grid)
                     float r = actr_prng();
                     float mass = 10 + r * r * r * 1000000;
                     float rotation = actr_prng() * PI;
-                    float distance = actr_sqrt(mass * MASS_SCALE);
+                    float scale = actr_sqrt(mass * MASS_SCALE);
 
-                    if (distance < 5)
+                    if (scale < 5)
                     {
-                        distance = 5;
+                        scale = 5;
                     }
 
-                    int ld = distance + 1;
+                    int ld = scale + 1;
                     if (x <= ld)
                     {
                         x += (ld - x + 1);
@@ -262,7 +287,7 @@ void init_area(struct ActrPoint32 grid)
                         y -= (y + ld - GRID_SIZE + 1);
                     }
 
-                    struct MyObjectAsteroid *asteroid = init_asteroid(random_ore(), point.x + x, point.y + y, rotation, mass, distance);
+                    struct MyObjectAsteroid *asteroid = init_asteroid(random_ore(), point.x + x, point.y + y, rotation, mass, scale);
 
                     leaf = actr_quad_tree_leaf(point.x + x - ld, point.y + y - ld, ld * 2.0, ld * 2.0, asteroid);
                     actr_quad_tree_insert(state->tree, leaf);
@@ -276,7 +301,7 @@ void init_area(struct ActrPoint32 grid)
     }
 }
 
-struct MyObjectAsteroid *init_asteroid(enum MyOre ore, double x, double y, float rotation, float mass, float distance)
+struct MyObjectAsteroid *init_asteroid(enum MyOre ore, double x, double y, float rotation, float mass, float scale)
 {
     struct MyObjectAsteroid *asteroid = actr_malloc(sizeof(struct MyObjectAsteroid));
     init_object((struct MyObject *)asteroid, MyObjectTypeAsteroid, x, y, rotation, mass);
@@ -284,9 +309,59 @@ struct MyObjectAsteroid *init_asteroid(enum MyOre ore, double x, double y, float
     asteroid->object.cos = actr_cos(asteroid->object.rotation);
     asteroid->object.sin = actr_sin(asteroid->object.rotation);
     asteroid->object.identity = state->identity++;
-    asteroid->object.distance = distance;
+    asteroid->scale = scale;
 
     return asteroid;
+}
+
+struct MyObjectStation *init_station(double x, double y)
+{
+    struct MyObjectStation *station = actr_malloc(sizeof(struct MyObjectStation));
+    init_object(&station->object, MyObjectTypeStation, x, y, 0, 999999);
+    return station;
+}
+
+void build_station(struct ActrPointD *point)
+{
+    struct ActrQuadTreeBounds area;
+    area.point.x = point->x - GRID_SIZE;
+    area.point.y = point->y - GRID_SIZE;
+    area.size.w = GRID_SIZE * 2;
+    area.size.h = GRID_SIZE * 2;
+    actr_quad_tree_query(state->tree, &area, state->result);
+    struct ActrQuadTreeLeaf *leaf;
+    struct MyObject *object;
+    double minDist2 = (STATION_SIZE * 2) * (STATION_SIZE * 2);
+    for (int i = 0; i < state->result->count; i++)
+    {
+
+        leaf = state->result->head[i];
+        object = leaf->item;
+        if (object->type == MyObjectTypeWaypoint)
+        {
+            continue;
+        }
+        if (object->type == MyObjectTypeStation)
+        {
+            state->result->count = 0;
+            push_message("Other station too close");
+            return;
+        }
+        
+        struct ActrPointD center = actr_quad_tree_bounds_center(&leaf->bounds);
+        double d2 = actr_distance2(&center, point);
+        if (d2 < minDist2)
+        {
+            push_message("Other object too close.");
+            return;
+        }
+    }
+    state->result->count = 0;
+    double x = point->x - STATION_SIZE / 2;
+    double y = point->y - STATION_SIZE / 2;
+    struct MyObjectStation *station = init_station(x, y);
+    actr_quad_tree_insert(state->tree, actr_quad_tree_leaf(x, y, STATION_SIZE, STATION_SIZE, station));
+    push_message("New Station Built");
 }
 
 void init_object(struct MyObject *object, enum MyObjectType type, double x, double y, float rotation, float mass)
@@ -345,7 +420,7 @@ int lines_intersect(struct ActrPointF a1, struct ActrPointF a2, struct ActrPoint
     return 1;
 }
 
-void queryView()
+void query_view()
 {
     struct ActrQuadTreeBounds bounds;
     bounds.point.x = state->player.object.position.x - actrState->canvasSize.w / 2;
@@ -358,16 +433,9 @@ void queryView()
 enum MyOre random_ore()
 {
     float v = actr_prng();
-    if (v < 0.1)
-        return MyOreIce;
-    if (v < 0.2)
-        return MyOreIron;
-    if (v < 0.3)
-        return MyOreCopper;
-    if (v < 0.4)
-        return MyOreNickel;
-    if (v < 0.5)
-        return MyOreSilicon;
+    for (int i = 0; i < MyOreEnd; i++) {
+        if (v < OreProbability[i]) return i;
+    }
     return MyOreStone;
 }
 
@@ -434,7 +502,8 @@ void actr_init()
     state->player.object.position.x = 500;
     state->player.object.position.y = 500;
     state->tree = actr_quad_tree_init(1, 0, 0, GRID_SIZE, 0);
-    state->result = actr_vector_init(8, 8);
+    state->result = actr_vector_init(4, 4);
+    state->waypoints = actr_vector_init(4, 4);
     struct ActrPoint32 grid;
     grid.x = 0;
     grid.y = 0;
@@ -461,7 +530,6 @@ struct MyMenu *menu_init(int key)
 
 void menu_add_item(struct MyMenu *menu, enum MyMenuAction action, char *text)
 {
-
     struct MyMenuItem *item = actr_malloc(sizeof(struct MyMenuItem));
     item->action = action;
     actr_heap_string(&item->text, text);
@@ -502,16 +570,28 @@ int check_open_menu(int key)
     }
     return open;
 }
+
+struct MyObjectWaypoint * init_waypoint(long long x, long long y) {
+    struct MyObjectWaypoint * waypoint = actr_malloc(sizeof(struct MyObjectWaypoint));
+    struct ActrQuadTreeLeaf * leaf = actr_quad_tree_leaf(x, y, 1, 1, waypoint);
+    actr_quad_tree_insert(state->tree, leaf);
+    init_object(&waypoint->object, MyObjectTypeWaypoint, state->player.object.position.x, state->player.object.position.y, 0, 0);
+    struct ActrFormatState * format = actr_format("%s.%s");
+    actr_format_int(format, x);
+    actr_format_int(format, y);
+    waypoint->name = actr_format_close(format);
+    actr_vector_add(state->waypoints, waypoint);
+    return waypoint;
+}
 [[clang::export_name("actr_key_down")]]
 void actr_key_down(int key)
 {
-    if (key == 109)
+    if (key == 98)
     {
-
         if (check_open_menu(key))
         {
             state->menu = menu_init(key);
-            menu_add_item(state->menu, MyMenuActionBuildBase, "Build Base");
+            menu_add_item(state->menu, MyMenuActionBuildStation, "Build Station");
             menu_add_item(state->menu, MyMenuActionClose, "Close");
         }
         return;
@@ -534,7 +614,28 @@ void actr_key_down(int key)
             menu_add_item(state->menu, MyMenuActionClose, "Close");
         }
     }
-    if (state->menu)
+    else if (key == 109)
+    {
+        if (check_open_menu(key))
+        {
+            state->menu = menu_init(key);
+            menu_add_item(state->menu, MyMenuActionAddWaypoint, "Add Waypoint");
+            struct MyObjectWaypoint * wp;
+            struct ActrFormatState * format;
+            char * text;
+            for (int i = 0; i < state->waypoints->count; i++)
+            {
+                wp = (struct MyObjectWaypoint *)state->waypoints->head[i];
+                format = actr_format("%s.%s");
+                actr_format_int(format, wp->object.position.x);
+                actr_format_int(format, wp->object.position.x);
+                text = actr_format_close(format);
+                menu_add_item(state->menu, MyMenuActionClose, text);
+                actr_free(text);
+            }
+        }
+    }
+    else if (state->menu)
     {
         if (key == 1)
         {
@@ -555,14 +656,20 @@ void actr_key_down(int key)
         else if (key == 32)
         {
             struct MyMenuItem *item = state->menu->items->head[state->menu->position];
-
+            
+            struct MyObjectWaypoint * waypoint;
             switch (item->action)
             {
             case MyMenuActionClose:
                 menu_close();
                 return;
-            case MyMenuActionBuildBase:
-            push_message("build base");
+            case MyMenuActionBuildStation:
+                build_station(&state->player.object.position);
+                menu_close();
+                return;
+            case MyMenuActionAddWaypoint:
+                init_waypoint(state->player.object.position.x, state->player.object.position.y);
+                
                 menu_close();
                 return;
             case MyMenuActionBack:
@@ -699,19 +806,19 @@ void draw_menu()
 {
     if (state->menu == 0)
         return;
-
-    int top = actrState->canvasSize.h - 300;
-    if (top < 0)
-        top = 0;
-
+    int margin = 8;
     int height = 25;
-    int margin = 5;
+    int top = margin;
     int left = margin;
+
     for (int i = 0; i < state->menu->items->count; i++)
     {
         struct MyMenuItem *item = state->menu->items->head[i];
         int width = margin + margin + strlen(item->text) * 9;
-
+        if (left + width + margin > actrState->canvasSize.w) {
+            left = margin;
+            top += height + margin;
+        }
         actr_canvas2d_fill_style(128, 128, 128, 50);
         actr_canvas2d_fill_rect(left, top, width, height);
         if (state->menu->position == i)
@@ -722,6 +829,7 @@ void draw_menu()
         actr_canvas2d_fill_style(255, 255, 255, 50);
         actr_canvas2d_fill_text(left + margin, top + height - margin, item->text);
         left += width + margin;
+
     }
 }
 [[clang::export_name("actr_step")]]
@@ -759,7 +867,7 @@ void actr_step(double delta)
     actr_canvas2d_fill_style(0, 0, 0, 100);
     actr_canvas2d_fill_rect(-10, -10, actrState->canvasSize.w + 20, actrState->canvasSize.h + 20);
 
-    drawView();
+    draw_view();
     draw_ship(&state->player, thrust, shoot);
 
     // struct ActrFormatState *format = actr_format("pos %s");
