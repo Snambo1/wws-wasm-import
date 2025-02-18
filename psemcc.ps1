@@ -44,7 +44,7 @@ else {
     
 
 
-emcc "$script" -I header  -O3 --no-entry -s WASM=1 -s ENVIRONMENT=web -s ERROR_ON_UNDEFINED_SYMBOLS=0 '-Wl,--export=__heap_base'  "-o $script.wasm"
+emcc "$script" -I header  -O3 --no-entry -s WASM=1 -s ENVIRONMENT=web -s ERROR_ON_UNDEFINED_SYMBOLS=0 '-Wl,--export=__heap_base'  "-o$script.wasm"
 
 if ($LastExitCode -eq 0) {
 
