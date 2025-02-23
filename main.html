@@ -1,0 +1,36 @@
+<canvas id="canvas" width="1000" height="500"></canvas>
+<script>
+    function convertR(radians) {
+        return radians * (Math.PI / 180);
+    }
+    let canvas = document.getElementById("canvas")
+    let c = canvas.getContext('2d')
+    c.strokeStyle = "black";
+    c.lineWidth = 10
+    let yShit = [1, 2,3,4]
+    let total = yShit.reduce((partialSum, a) => partialSum + a, 0);
+    //c.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = 0; i < yShit.length; i++)
+        yShit[i] = yShit[i] / total
+    let prev = 0
+    console.log(yShit)
+    for (let i = 0; i < yShit.length; i++) {
+        c.beginPath()
+        c.moveTo(250, 200)
+        c.lineTo(Math.cos(convertR(prev + yShit[i])) * 100 + 250, Math.sin(convertR(prev + yShit[i])) * 100 + 200)
+        prev += yShit[i] * 360
+        c.stroke()
+        //console.log(prev)
+        c.closePath()
+    }
+    prev = 0
+    for (let i = 0; i < yShit.length; i++) {
+        c.beginPath()
+        //c.moveTo(250, 200)
+        c.arc(250, 200, 100, prev, prev + yShit[i] * 360, 1)
+        prev += yShit[i] * 360
+        c.stroke()
+        //console.log(prev)
+        c.closePath()
+    }
+</script>
