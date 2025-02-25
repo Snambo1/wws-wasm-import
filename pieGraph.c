@@ -35,8 +35,10 @@ double parseFloat(char *s){
     return buffer;
 }
 
-double convert(double degree)
-{
+void strcpy(char *s,char *dst){
+    while (*dst=*s++);
+}
+double convert(double degree){
     double pi = 3.14159265359;
     return (degree * (pi / 180));
 }
@@ -83,14 +85,17 @@ void pieGraphMaker(char *s){
     }
     actr_free(nums);
 }
-struct ActrUIControlText * textbox;
+struct ActrUIControlText * percents;
+struct ActrUIControlText * labels;
 struct ActrUIControlButton * button;
+char * input=0;
 
 [[clang::export_name("actr_init")]]
 void actr_init(int w, int h)
 {
     actr_ui_init(w,h); // required
-    textbox = actr_ui_text(100, 100, 500, 25, "Hello World");
+    percents = actr_ui_text(100, 130, 500, 25, "");
+    labels=actr_ui_text(100, 100, 500, 25, "");
     button = actr_ui_button(100, 200, 250, 25, "My Button");
 
 }
@@ -103,6 +108,10 @@ void actr_pointer_tap(int x, int y)
     if ((struct ActrUIControlButton *)tapped == button)
     {
         draw=1;
+        if (input!=0)
+            actr_free(input);
+        input=(char*)actr_malloc(strlen(percents->value)*sizeof(char));
+        strcpy(percents->value,input);
         return;
     }
     
@@ -131,7 +140,7 @@ void actr_step(double delta)
 {
     actr_ui_draw(delta); // required
     if (draw)
-        pieGraphMaker(textbox->value);
+        pieGraphMaker(input);
 
 }
 
